@@ -1,7 +1,7 @@
 {
-  "name": "@sideprotocol/interchainliquidity",
+  "name": "@sideprotocol/ibcswap",
   "version": "0.0.1",
-  "description": "sideprotocol/interchainliquidity",
+  "description": "sideprotocol/ibcswap",
   "author": "Marian Z",
   "license": "MIT",
   "private": true,
