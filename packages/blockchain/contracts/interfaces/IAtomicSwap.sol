@@ -2,6 +2,11 @@
 pragma solidity ^0.8.9;
 
 interface IAtomicSwap {
+    enum MsgType {
+        MAKESWAP,
+        TAKESWAP,
+        CANCELSWAP
+    }
     // Data types
     enum Side {
         NATIVE,
@@ -35,7 +40,7 @@ interface IAtomicSwap {
 
     struct Coin {
         address token;
-        address amount;
+        uint amount;
     }
 
     // Messages
@@ -45,7 +50,6 @@ interface IAtomicSwap {
         address makerSender;
         address makerReceiver;
         address desiredTaker;
-        uint createdAt;
         uint expireAt;
         uint16 dstChainID;
     }
@@ -74,4 +78,7 @@ interface IAtomicSwap {
 
     // Define errors
     error AlreaydExistPool();
+
+    // Events
+    event CreatedAtomicSwapOrder(bytes32 indexed id);
 }

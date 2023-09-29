@@ -3,7 +3,7 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-import { Settings } from "@xfuntoken/contracts-typechain";
+import { Settings } from "@sideprotocol/contracts-typechain";
 import { ethers, network } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 

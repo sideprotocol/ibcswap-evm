@@ -2,114 +2,102 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./presets/OwnablePausableUpgradeable.sol";
 import "./interfaces/IAtomicSwap.sol";
 import "./lzApp/NonblockingLzAppUpgradeable.sol";
 
 contract AtomicSwap is
     UUPSUpgradeable,
-    EIP712Upgradeable,
     IAtomicSwap,
-    OwnablePausableUpgradeable,
     NonblockingLzAppUpgradeable
 {
-    using ECDSAUpgradeable for bytes32;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.Bytes32Set;
 
     EnumerableSetUpgradeable.Bytes32Set private swapOrderIDs;
     AtomicSwapOrder[] swapOrders;
-
-    // EIP-712
-    bytes32 public DOMAIN_SEPARATOR;
-    string public constant EIP712_DOMAIN_TYPEHASH =
-        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-
-    bytes32 public constant PAYMENT_TYPEHASH =
-        keccak256(
-            "Payment(address payer,address tierIndex,uint256 tierIndex,uint256 nonce)"
-        );
 
     mapping(address => uint256) public nonces;
 
     uint16 chainID;
 
     function initialize(
-        address _admin,
+        address admin,
         uint16 _chainID,
         address _endpoint
     ) external initializer {
-        __OwnablePausableUpgradeable_init(_admin);
-        __EIP712_init("ATOMICSWAP", "1");
+        __Ownable_init_unchained();
+        transferOwnership(admin);
         __NonblockingLzAppUpgradeable_init(_endpoint);
         chainID = _chainID;
     }
 
-    function _authorizeUpgrade(address) internal override onlyAdmin {}
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 
     /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
-    function makeSwap(
-        MakeSwapMsg calldata makeswap
-    ) external payable virtual whenNotPaused {
+    function makeSwap(MakeSwapMsg calldata makeswap) external payable virtual {
         // Create atomic order
         bytes32 id = _generateNewAtomicSwapID(msg.sender, makeswap.dstChainID);
         if (swapOrderIDs.contains(id)) {
             revert AlreaydExistPool();
         }
-
-        AtomicSwapOrder memory _order = AtomicSwapOrder(
+        AtomicSwapOrder memory _order = _buildAtomicOrderFromMakeSwapMsg(
             id,
-            Side.NATIVE,
-            Status.INITIAL,
-            address(0x0),
-            makeswap.sellToken,
-            makeswap.buyToken,
-            msg.sender,
-            makeswap.makerReceiver,
-            makeswap.desiredTaker,
-            address(0x0),
-            address(0x0),
-            block.timestamp,
-            0,
-            0,
-            chainID,
-            makeswap.dstChainID
+            makeswap
         );
-
         swapOrders.push(_order);
-        bytes memory payload = abi.encode(makeswap);
+        bytes memory payload = abi.encode(MsgType.MAKESWAP, id, makeswap);
         _lzSendMsg(payload);
+        emit CreatedAtomicSwapOrder(id);
     }
 
-    /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
-    function takeSwap(
-        TakeSwapMsg calldata takeswap
-    ) external payable virtual whenNotPaused {
-        //
-        bytes memory payload = abi.encode(takeswap);
-        _lzSendMsg(payload);
-    }
+    // /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
+    // function takeSwap(TakeSwapMsg calldata takeswap) external payable virtual {
+    //     //
+    //     bytes memory payload = abi.encode(takeswap);
+    //     _lzSendMsg(payload);
+    // }
 
-    /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
-    function cancelSwap(
-        CancelSwapMsg calldata cancelswap
-    ) external payable virtual whenNotPaused {
-        //
-        bytes memory payload = abi.encode(cancelswap);
-        _lzSendMsg(payload);
-    }
+    // /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
+    // function cancelSwap(
+    //     CancelSwapMsg calldata cancelswap
+    // ) external payable virtual {
+    //     //
+    //     bytes memory payload = abi.encode(cancelswap);
+    //     _lzSendMsg(payload);
+    // }
 
     function _nonblockingLzReceive(
-        uint16 _srcChainId,
+        uint16 _srcChainID,
         bytes memory _srcAddress,
         uint64 _nonce,
-        bytes memory _payload
-    ) internal virtual override {}
+        bytes calldata _payload
+    ) internal virtual override {
+        MsgType msgType = abi.decode(_payload[:32], (MsgType));
+        // MakeSwapMsg
+        if (msgType == MsgType.MAKESWAP) {
+            bytes32 id = bytes32(_payload[32:64]);
+            MakeSwapMsg memory makeswap = abi.decode(
+                _payload[64:],
+                (MakeSwapMsg)
+            );
+            if (swapOrderIDs.contains(id)) {
+                revert();
+            }
+            AtomicSwapOrder memory _order = _buildAtomicOrderFromMakeSwapMsg(
+                id,
+                makeswap
+            );
+            // Inverse chainID
+            _order.srcChainID = chainID;
+            _order.dstChainID = _srcChainID;
+            // Set order side.
+            _order.side = Side.REMOTE;
+            // Save order.
+            swapOrders.push(_order);
+        }
+    }
 
     function estimateFee(
         uint16 _dstChainId,
@@ -127,7 +115,7 @@ contract AtomicSwap is
             );
     }
 
-    function setOracle(uint16 dstChainId, address oracle) external onlyAdmin {
+    function setOracle(uint16 dstChainId, address oracle) external onlyOwner {
         uint TYPE_ORACLE = 6;
         // set the Oracle
         lzEndpoint.setConfig(
@@ -140,7 +128,7 @@ contract AtomicSwap is
 
     function _lzSendMsg(bytes memory payload) private {
         _lzSend(
-            1,
+            chainID,
             payload,
             payable(msg.sender),
             address(0x0),
@@ -155,5 +143,30 @@ contract AtomicSwap is
         uint16 dstChainID
     ) internal view returns (bytes32 id) {
         id = keccak256(abi.encode(chainID, dstChainID, sender, nonces[sender]));
+    }
+
+    function _buildAtomicOrderFromMakeSwapMsg(
+        bytes32 id,
+        MakeSwapMsg memory makeswap
+    ) internal view returns (AtomicSwapOrder memory) {
+        return
+            AtomicSwapOrder(
+                id,
+                Side.NATIVE,
+                Status.INITIAL,
+                address(0x0),
+                makeswap.sellToken,
+                makeswap.buyToken,
+                msg.sender,
+                makeswap.makerReceiver,
+                makeswap.desiredTaker,
+                address(0x0),
+                address(0x0),
+                block.timestamp,
+                0,
+                0,
+                chainID,
+                makeswap.dstChainID
+            );
     }
 }

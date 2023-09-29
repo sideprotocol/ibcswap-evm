@@ -30,9 +30,15 @@ const config: HardhatUserConfig = {
       },
     ],
     settings: {
+      metadata: {
+        bytecodeHash: "none",
+      },
       optimizer: {
         enabled: true,
         runs: 1000,
+      },
+      diagnostics: {
+        overwriteStack: true,
       },
     },
   },

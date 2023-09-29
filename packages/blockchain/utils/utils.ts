@@ -7,6 +7,7 @@ import {
 } from "fs";
 
 import { ethers, upgrades } from "hardhat";
+import { LZEndpointMock, AtomicSwap } from "@sideprotocol/contracts-typechain";
 export const ERC20_MINT_AMOUNT = 100000000;
 // stable coins
 const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
@@ -43,75 +44,63 @@ export const saveDeployedAddress = async (
 export const Utils = {
   prepareTest: async function () {
     //import users
-    const [owner, admin] = await ethers.getSigners();
+    const [owner] = await ethers.getSigners();
     //deploy contracts
+    // create a LayerZero Endpoint mock for testing
+    const chainID = 123;
+    const LayerZeroEndpointMock = await ethers.getContractFactory(
+      "LZEndpointMock"
+    );
+    const lzEndpointMock = await LayerZeroEndpointMock.deploy(chainID);
 
-    // const scopeTokenFactory = await ethers.getContractFactory(
-    //   "BlockScopeToken"
-    // );
-    // const scopeToken = await scopeTokenFactory.deploy(
-    //   "BlockScope Token",
-    //   "Scope",
-    //   admin.address
-    // );
-    // await scopeToken.deployed();
+    // AtomicSwap contract deploy
+    const atomicSwapFactory = await ethers.getContractFactory("AtomicSwap");
+    const atomicSwapA = await upgrades.deployProxy(
+      atomicSwapFactory,
+      [owner.address, chainID, lzEndpointMock.address],
+      {
+        kind: "uups",
+      }
+    );
+    const atomicSwapB = await upgrades.deployProxy(
+      atomicSwapFactory,
+      [owner.address, chainID, lzEndpointMock.address],
+      {
+        kind: "uups",
+      }
+    );
 
-    // const scopeOracleFactory = await ethers.getContractFactory(
-    //   "BlockScopeOracle"
-    // );
+    // Setup layerzero endpoint
+    await lzEndpointMock.setDestLzEndpoint(
+      atomicSwapA.address,
+      lzEndpointMock.address
+    );
+    await lzEndpointMock.setDestLzEndpoint(
+      atomicSwapB.address,
+      lzEndpointMock.address
+    );
 
-    // const oracles = [
-    //   { source: 0, token: "", feed: { base: "", quote: "", oracle: "" } },
-    //   { source: 0, token: "", feed: { base: "", quote: "", oracle: "" } },
-    //   { source: 0, token: "", feed: { base: "", quote: "", oracle: "" } },
-    // ];
-
-    // const scopeOracle = await upgrades.deployProxy(
-    //   scopeOracleFactory,
-    //   [admin.address, oracles],
-    //   {
-    //     kind: "uups",
-    //   }
-    // );
-
-    // const scopeVestingFactory = await ethers.getContractFactory(
-    //   "BlockScopeVesting"
-    // );
-    // const scopeVesting = await scopeVestingFactory.deploy(scopeToken.address);
-    // await scopeVesting.deployed();
-
-    // const scopePaymentFactory = await ethers.getContractFactory(
-    //   "BlockScopePayment"
-    // );
-
-    // const tiers = [
-    //   { name: "free", price: 10 },
-    //   { name: "tier1", price: 20 },
-    //   { name: "tier2", price: 30 },
-    // ];
-    // const scopePayment = await upgrades.deployProxy(
-    //   scopePaymentFactory,
-    //   [admin.address, daoTreasury.address, tiers],
-    //   {
-    //     kind: "uups",
-    //   }
-    // );
-
-    // await scopeToken
-    //   .connect(owner)
-    //   .approve(scopePayment.address, ERC20_MINT_AMOUNT);
-    // await scopeToken
-    //   .connect(owner)
-    //   .approve(scopeVesting.address, ERC20_MINT_AMOUNT);
+    // set each contracts source address so it can send to each other
+    await atomicSwapA.setTrustedRemote(
+      chainID,
+      ethers.utils.solidityPack(
+        ["address", "address"],
+        [atomicSwapB.address, atomicSwapA.address]
+      )
+    );
+    await atomicSwapB.setTrustedRemote(
+      chainID,
+      ethers.utils.solidityPack(
+        ["address", "address"],
+        [atomicSwapA.address, atomicSwapB.address]
+      )
+    );
 
     return {
-      // scopeToken: scopeToken,
-      // scopeOracle: scopeOracle,
-      // scopeVesting: scopeVesting,
-      // scopePayment: scopePayment,
-      // admin,
-      // daoTreasury,
-      // user,
+      chainID: chainID,
+      lzEndpointMock: lzEndpointMock as LZEndpointMock,
+      atomicSwapA: atomicSwapA as AtomicSwap,
+      atomicSwapB: atomicSwapB as AtomicSwap,
     };
   },
 };
