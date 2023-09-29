@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as interfaces from "./interfaces";
+export * as lzApp from "./lzApp";
 export * as presets from "./presets";
 export * as v2 from "./v2";
 export { AtomicSwap__factory } from "./AtomicSwap__factory";

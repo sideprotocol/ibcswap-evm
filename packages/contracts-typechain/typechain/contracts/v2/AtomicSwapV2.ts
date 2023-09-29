@@ -30,15 +30,15 @@ import type {
 
 export declare namespace IAtomicSwap {
   export type CancelSwapMsgStruct = {
-    order_id: PromiseOrValue<BytesLike>;
+    orderID: PromiseOrValue<BytesLike>;
     maker: PromiseOrValue<string>;
-    created_at: PromiseOrValue<BigNumberish>;
+    createdAt: PromiseOrValue<BigNumberish>;
   };
 
   export type CancelSwapMsgStructOutput = [string, string, BigNumber] & {
-    order_id: string;
+    orderID: string;
     maker: string;
-    created_at: BigNumber;
+    createdAt: BigNumber;
   };
 
   export type CoinStruct = {
@@ -52,13 +52,14 @@ export declare namespace IAtomicSwap {
   };
 
   export type MakeSwapMsgStruct = {
-    sell_token: IAtomicSwap.CoinStruct;
-    buy_token: IAtomicSwap.CoinStruct;
-    maker_sender: PromiseOrValue<string>;
-    maker_receiver: PromiseOrValue<string>;
-    desired_taker: PromiseOrValue<string>;
-    created_at: PromiseOrValue<BigNumberish>;
-    expire_at: PromiseOrValue<BigNumberish>;
+    sellToken: IAtomicSwap.CoinStruct;
+    buyToken: IAtomicSwap.CoinStruct;
+    makerSender: PromiseOrValue<string>;
+    makerReceiver: PromiseOrValue<string>;
+    desiredTaker: PromiseOrValue<string>;
+    createdAt: PromiseOrValue<BigNumberish>;
+    expireAt: PromiseOrValue<BigNumberish>;
+    dstChainID: PromiseOrValue<BigNumberish>;
   };
 
   export type MakeSwapMsgStructOutput = [
@@ -68,23 +69,25 @@ export declare namespace IAtomicSwap {
     string,
     string,
     BigNumber,
-    BigNumber
+    BigNumber,
+    number
   ] & {
-    sell_token: IAtomicSwap.CoinStructOutput;
-    buy_token: IAtomicSwap.CoinStructOutput;
-    maker_sender: string;
-    maker_receiver: string;
-    desired_taker: string;
-    created_at: BigNumber;
-    expire_at: BigNumber;
+    sellToken: IAtomicSwap.CoinStructOutput;
+    buyToken: IAtomicSwap.CoinStructOutput;
+    makerSender: string;
+    makerReceiver: string;
+    desiredTaker: string;
+    createdAt: BigNumber;
+    expireAt: BigNumber;
+    dstChainID: number;
   };
 
   export type TakeSwapMsgStruct = {
-    order_id: PromiseOrValue<BytesLike>;
-    sell_token: IAtomicSwap.CoinStruct;
+    orderID: PromiseOrValue<BytesLike>;
+    sellToken: IAtomicSwap.CoinStruct;
     taker: PromiseOrValue<string>;
-    taker_receiving_address: PromiseOrValue<string>;
-    created_at: PromiseOrValue<string>;
+    takerReceivingAddress: PromiseOrValue<string>;
+    createdAt: PromiseOrValue<string>;
   };
 
   export type TakeSwapMsgStructOutput = [
@@ -94,17 +97,18 @@ export declare namespace IAtomicSwap {
     string,
     string
   ] & {
-    order_id: string;
-    sell_token: IAtomicSwap.CoinStructOutput;
+    orderID: string;
+    sellToken: IAtomicSwap.CoinStructOutput;
     taker: string;
-    taker_receiving_address: string;
-    created_at: string;
+    takerReceivingAddress: string;
+    createdAt: string;
   };
 }
 
 export interface AtomicSwapV2Interface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
+    "DEFAULT_PAYLOAD_SIZE_LIMIT()": FunctionFragment;
     "DOMAIN_SEPARATOR()": FunctionFragment;
     "EIP712_DOMAIN_TYPEHASH()": FunctionFragment;
     "PAUSER_ROLE()": FunctionFragment;
@@ -113,25 +117,51 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     "addPauser(address)": FunctionFragment;
     "cancelSwap((bytes32,address,uint256))": FunctionFragment;
     "eip712Domain()": FunctionFragment;
+    "estimateFee(uint16,bool,bytes,bytes)": FunctionFragment;
+    "failedMessages(uint16,bytes,uint64)": FunctionFragment;
+    "forceResumeReceive(uint16,bytes)": FunctionFragment;
+    "getConfig(uint16,uint16,address,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
+    "getTrustedRemoteAddress(uint16)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "initialize(address)": FunctionFragment;
+    "initialize(address,uint16,address)": FunctionFragment;
     "isAdmin(address)": FunctionFragment;
     "isPauser(address)": FunctionFragment;
-    "makeSwap(((address,address),(address,address),address,address,address,uint256,uint256))": FunctionFragment;
+    "isTrustedRemote(uint16,bytes)": FunctionFragment;
+    "lzEndpoint()": FunctionFragment;
+    "lzReceive(uint16,bytes,uint64,bytes)": FunctionFragment;
+    "makeSwap(((address,address),(address,address),address,address,address,uint256,uint256,uint16))": FunctionFragment;
+    "minDstGasLookup(uint16,uint16)": FunctionFragment;
+    "nonblockingLzReceive(uint16,bytes,uint64,bytes)": FunctionFragment;
     "nonces(address)": FunctionFragment;
+    "owner()": FunctionFragment;
     "paginationSize()": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
+    "payloadSizeLimitLookup(uint16)": FunctionFragment;
+    "precrime()": FunctionFragment;
     "proxiableUUID()": FunctionFragment;
     "removeAdmin(address)": FunctionFragment;
     "removePauser(address)": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
+    "retryMessage(uint16,bytes,uint64,bytes)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
+    "setConfig(uint16,uint16,uint256,bytes)": FunctionFragment;
+    "setMinDstGas(uint16,uint16,uint256)": FunctionFragment;
+    "setOracle(uint16,address)": FunctionFragment;
     "setPaginationSize(uint256)": FunctionFragment;
+    "setPayloadSizeLimit(uint16,uint256)": FunctionFragment;
+    "setPrecrime(address)": FunctionFragment;
+    "setReceiveVersion(uint16)": FunctionFragment;
+    "setSendVersion(uint16)": FunctionFragment;
+    "setTrustedRemote(uint16,bytes)": FunctionFragment;
+    "setTrustedRemoteAddress(uint16,bytes)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "takeSwap((bytes32,(address,address),address,address,address))": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
+    "trustedRemoteLookup(uint16)": FunctionFragment;
     "unpause()": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
@@ -140,6 +170,7 @@ export interface AtomicSwapV2Interface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "DEFAULT_ADMIN_ROLE"
+      | "DEFAULT_PAYLOAD_SIZE_LIMIT"
       | "DOMAIN_SEPARATOR"
       | "EIP712_DOMAIN_TYPEHASH"
       | "PAUSER_ROLE"
@@ -148,25 +179,51 @@ export interface AtomicSwapV2Interface extends utils.Interface {
       | "addPauser"
       | "cancelSwap"
       | "eip712Domain"
+      | "estimateFee"
+      | "failedMessages"
+      | "forceResumeReceive"
+      | "getConfig"
       | "getRoleAdmin"
+      | "getTrustedRemoteAddress"
       | "grantRole"
       | "hasRole"
       | "initialize"
       | "isAdmin"
       | "isPauser"
+      | "isTrustedRemote"
+      | "lzEndpoint"
+      | "lzReceive"
       | "makeSwap"
+      | "minDstGasLookup"
+      | "nonblockingLzReceive"
       | "nonces"
+      | "owner"
       | "paginationSize"
       | "pause"
       | "paused"
+      | "payloadSizeLimitLookup"
+      | "precrime"
       | "proxiableUUID"
       | "removeAdmin"
       | "removePauser"
+      | "renounceOwnership"
       | "renounceRole"
+      | "retryMessage"
       | "revokeRole"
+      | "setConfig"
+      | "setMinDstGas"
+      | "setOracle"
       | "setPaginationSize"
+      | "setPayloadSizeLimit"
+      | "setPrecrime"
+      | "setReceiveVersion"
+      | "setSendVersion"
+      | "setTrustedRemote"
+      | "setTrustedRemoteAddress"
       | "supportsInterface"
       | "takeSwap"
+      | "transferOwnership"
+      | "trustedRemoteLookup"
       | "unpause"
       | "upgradeTo"
       | "upgradeToAndCall"
@@ -174,6 +231,10 @@ export interface AtomicSwapV2Interface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "DEFAULT_PAYLOAD_SIZE_LIMIT",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -209,8 +270,42 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "estimateFee",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "failedMessages",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "forceResumeReceive",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getConfig",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTrustedRemoteAddress",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -222,7 +317,11 @@ export interface AtomicSwapV2Interface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [PromiseOrValue<string>]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "isAdmin",
@@ -233,19 +332,55 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "isTrustedRemote",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lzEndpoint",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lzReceive",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "makeSwap",
     values: [IAtomicSwap.MakeSwapMsgStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "minDstGasLookup",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nonblockingLzReceive",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "nonces",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "paginationSize",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "payloadSizeLimitLookup",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(functionFragment: "precrime", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "proxiableUUID",
     values?: undefined
@@ -259,16 +394,74 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceRole",
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "retryMessage",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "revokeRole",
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "setConfig",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMinDstGas",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setOracle",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setPaginationSize",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPayloadSizeLimit",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPrecrime",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setReceiveVersion",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setSendVersion",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setTrustedRemote",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setTrustedRemoteAddress",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -277,6 +470,14 @@ export interface AtomicSwapV2Interface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "takeSwap",
     values: [IAtomicSwap.TakeSwapMsgStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "trustedRemoteLookup",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
@@ -290,6 +491,10 @@ export interface AtomicSwapV2Interface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "DEFAULT_PAYLOAD_SIZE_LIMIT",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -316,7 +521,24 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "estimateFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "failedMessages",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "forceResumeReceive",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getConfig", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "getRoleAdmin",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTrustedRemoteAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -324,14 +546,34 @@ export interface AtomicSwapV2Interface extends utils.Interface {
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isAdmin", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isPauser", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isTrustedRemote",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "lzEndpoint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lzReceive", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "makeSwap", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "minDstGasLookup",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "nonblockingLzReceive",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "paginationSize",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "payloadSizeLimitLookup",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "precrime", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "proxiableUUID",
     data: BytesLike
@@ -345,12 +587,50 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "renounceRole",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "retryMessage",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setConfig", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setMinDstGas",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setOracle", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setPaginationSize",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPayloadSizeLimit",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPrecrime",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setReceiveVersion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setSendVersion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setTrustedRemote",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setTrustedRemoteAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -358,6 +638,14 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "takeSwap", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "trustedRemoteLookup",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
   decodeFunctionResult(
@@ -371,11 +659,18 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     "BeaconUpgraded(address)": EventFragment;
     "EIP712DomainChanged()": EventFragment;
     "Initialized(uint8)": EventFragment;
+    "MessageFailed(uint16,bytes,uint64,bytes,bytes)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "PaymentReceived(address,uint256,uint256,uint256)": EventFragment;
+    "RetryMessageSuccess(uint16,bytes,uint64,bytes32)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
+    "SetMinDstGas(uint16,uint16,uint256)": EventFragment;
+    "SetPrecrime(address)": EventFragment;
+    "SetTrustedRemote(uint16,bytes)": EventFragment;
+    "SetTrustedRemoteAddress(uint16,bytes)": EventFragment;
     "Unpaused(address)": EventFragment;
     "Upgraded(address)": EventFragment;
   };
@@ -385,11 +680,18 @@ export interface AtomicSwapV2Interface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MessageFailed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PaymentReceived"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RetryMessageSuccess"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SetMinDstGas"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SetPrecrime"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SetTrustedRemote"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SetTrustedRemoteAddress"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
@@ -438,6 +740,32 @@ export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
+export interface MessageFailedEventObject {
+  _srcChainId: number;
+  _srcAddress: string;
+  _nonce: BigNumber;
+  _payload: string;
+  _reason: string;
+}
+export type MessageFailedEvent = TypedEvent<
+  [number, string, BigNumber, string, string],
+  MessageFailedEventObject
+>;
+
+export type MessageFailedEventFilter = TypedEventFilter<MessageFailedEvent>;
+
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
+}
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
+
 export interface PausedEventObject {
   account: string;
 }
@@ -457,6 +785,20 @@ export type PaymentReceivedEvent = TypedEvent<
 >;
 
 export type PaymentReceivedEventFilter = TypedEventFilter<PaymentReceivedEvent>;
+
+export interface RetryMessageSuccessEventObject {
+  _srcChainId: number;
+  _srcAddress: string;
+  _nonce: BigNumber;
+  _payloadHash: string;
+}
+export type RetryMessageSuccessEvent = TypedEvent<
+  [number, string, BigNumber, string],
+  RetryMessageSuccessEventObject
+>;
+
+export type RetryMessageSuccessEventFilter =
+  TypedEventFilter<RetryMessageSuccessEvent>;
 
 export interface RoleAdminChangedEventObject {
   role: string;
@@ -494,6 +836,49 @@ export type RoleRevokedEvent = TypedEvent<
 >;
 
 export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
+
+export interface SetMinDstGasEventObject {
+  _dstChainId: number;
+  _type: number;
+  _minDstGas: BigNumber;
+}
+export type SetMinDstGasEvent = TypedEvent<
+  [number, number, BigNumber],
+  SetMinDstGasEventObject
+>;
+
+export type SetMinDstGasEventFilter = TypedEventFilter<SetMinDstGasEvent>;
+
+export interface SetPrecrimeEventObject {
+  precrime: string;
+}
+export type SetPrecrimeEvent = TypedEvent<[string], SetPrecrimeEventObject>;
+
+export type SetPrecrimeEventFilter = TypedEventFilter<SetPrecrimeEvent>;
+
+export interface SetTrustedRemoteEventObject {
+  _remoteChainId: number;
+  _path: string;
+}
+export type SetTrustedRemoteEvent = TypedEvent<
+  [number, string],
+  SetTrustedRemoteEventObject
+>;
+
+export type SetTrustedRemoteEventFilter =
+  TypedEventFilter<SetTrustedRemoteEvent>;
+
+export interface SetTrustedRemoteAddressEventObject {
+  _remoteChainId: number;
+  _remoteAddress: string;
+}
+export type SetTrustedRemoteAddressEvent = TypedEvent<
+  [number, string],
+  SetTrustedRemoteAddressEventObject
+>;
+
+export type SetTrustedRemoteAddressEventFilter =
+  TypedEventFilter<SetTrustedRemoteAddressEvent>;
 
 export interface UnpausedEventObject {
   account: string;
@@ -538,6 +923,8 @@ export interface AtomicSwapV2 extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
+    DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<[string]>;
 
     EIP712_DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<[string]>;
@@ -557,7 +944,7 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<ContractTransaction>;
 
     cancelSwap(
-      makeswap: IAtomicSwap.CancelSwapMsgStruct,
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -575,8 +962,44 @@ export interface AtomicSwapV2 extends BaseContract {
       }
     >;
 
+    estimateFee(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _useZro: PromiseOrValue<boolean>,
+      _adapterParams: PromiseOrValue<BytesLike>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { nativeFee: BigNumber; zroFee: BigNumber }
+    >;
+
+    failedMessages(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BytesLike>,
+      arg2: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    forceResumeReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    getConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      arg2: PromiseOrValue<string>,
+      _configType: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getRoleAdmin(
       role: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    getTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
@@ -594,6 +1017,8 @@ export interface AtomicSwapV2 extends BaseContract {
 
     initialize(
       _admin: PromiseOrValue<string>,
+      _chainID: PromiseOrValue<BigNumberish>,
+      _endpoint: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -607,15 +1032,47 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    isTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    lzEndpoint(overrides?: CallOverrides): Promise<[string]>;
+
+    lzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     makeSwap(
       makeswap: IAtomicSwap.MakeSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    minDstGasLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    nonblockingLzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     nonces(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    owner(overrides?: CallOverrides): Promise<[string]>;
 
     paginationSize(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -624,6 +1081,13 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<ContractTransaction>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
+
+    payloadSizeLimitLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    precrime(overrides?: CallOverrides): Promise<[string]>;
 
     proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
 
@@ -637,10 +1101,22 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     renounceRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    retryMessage(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     revokeRole(
@@ -649,8 +1125,62 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    setConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      _configType: PromiseOrValue<BigNumberish>,
+      _config: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setMinDstGas(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _packetType: PromiseOrValue<BigNumberish>,
+      _minGas: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setOracle(
+      dstChainId: PromiseOrValue<BigNumberish>,
+      oracle: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     setPaginationSize(
       _paginationSize: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setPayloadSizeLimit(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _size: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setPrecrime(
+      _precrime: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setReceiveVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setSendVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _path: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
+      _remoteAddress: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -660,9 +1190,19 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<[boolean]>;
 
     takeSwap(
-      makeswap: IAtomicSwap.TakeSwapMsgStruct,
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    trustedRemoteLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     unpause(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -681,6 +1221,8 @@ export interface AtomicSwapV2 extends BaseContract {
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
+
+  DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<BigNumber>;
 
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
@@ -701,7 +1243,7 @@ export interface AtomicSwapV2 extends BaseContract {
   ): Promise<ContractTransaction>;
 
   cancelSwap(
-    makeswap: IAtomicSwap.CancelSwapMsgStruct,
+    cancelswap: IAtomicSwap.CancelSwapMsgStruct,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -719,8 +1261,44 @@ export interface AtomicSwapV2 extends BaseContract {
     }
   >;
 
+  estimateFee(
+    _dstChainId: PromiseOrValue<BigNumberish>,
+    _useZro: PromiseOrValue<boolean>,
+    _adapterParams: PromiseOrValue<BytesLike>,
+    _payload: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber] & { nativeFee: BigNumber; zroFee: BigNumber }
+  >;
+
+  failedMessages(
+    arg0: PromiseOrValue<BigNumberish>,
+    arg1: PromiseOrValue<BytesLike>,
+    arg2: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  forceResumeReceive(
+    _srcChainId: PromiseOrValue<BigNumberish>,
+    _srcAddress: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  getConfig(
+    _version: PromiseOrValue<BigNumberish>,
+    _chainId: PromiseOrValue<BigNumberish>,
+    arg2: PromiseOrValue<string>,
+    _configType: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   getRoleAdmin(
     role: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  getTrustedRemoteAddress(
+    _remoteChainId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
@@ -738,6 +1316,8 @@ export interface AtomicSwapV2 extends BaseContract {
 
   initialize(
     _admin: PromiseOrValue<string>,
+    _chainID: PromiseOrValue<BigNumberish>,
+    _endpoint: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -751,15 +1331,47 @@ export interface AtomicSwapV2 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  isTrustedRemote(
+    _srcChainId: PromiseOrValue<BigNumberish>,
+    _srcAddress: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  lzEndpoint(overrides?: CallOverrides): Promise<string>;
+
+  lzReceive(
+    _srcChainId: PromiseOrValue<BigNumberish>,
+    _srcAddress: PromiseOrValue<BytesLike>,
+    _nonce: PromiseOrValue<BigNumberish>,
+    _payload: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   makeSwap(
     makeswap: IAtomicSwap.MakeSwapMsgStruct,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  minDstGasLookup(
+    arg0: PromiseOrValue<BigNumberish>,
+    arg1: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  nonblockingLzReceive(
+    _srcChainId: PromiseOrValue<BigNumberish>,
+    _srcAddress: PromiseOrValue<BytesLike>,
+    _nonce: PromiseOrValue<BigNumberish>,
+    _payload: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   nonces(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  owner(overrides?: CallOverrides): Promise<string>;
 
   paginationSize(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -768,6 +1380,13 @@ export interface AtomicSwapV2 extends BaseContract {
   ): Promise<ContractTransaction>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
+
+  payloadSizeLimitLookup(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  precrime(overrides?: CallOverrides): Promise<string>;
 
   proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
@@ -781,10 +1400,22 @@ export interface AtomicSwapV2 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  renounceOwnership(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   renounceRole(
     role: PromiseOrValue<BytesLike>,
     account: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  retryMessage(
+    _srcChainId: PromiseOrValue<BigNumberish>,
+    _srcAddress: PromiseOrValue<BytesLike>,
+    _nonce: PromiseOrValue<BigNumberish>,
+    _payload: PromiseOrValue<BytesLike>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   revokeRole(
@@ -793,8 +1424,62 @@ export interface AtomicSwapV2 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  setConfig(
+    _version: PromiseOrValue<BigNumberish>,
+    _chainId: PromiseOrValue<BigNumberish>,
+    _configType: PromiseOrValue<BigNumberish>,
+    _config: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setMinDstGas(
+    _dstChainId: PromiseOrValue<BigNumberish>,
+    _packetType: PromiseOrValue<BigNumberish>,
+    _minGas: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setOracle(
+    dstChainId: PromiseOrValue<BigNumberish>,
+    oracle: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   setPaginationSize(
     _paginationSize: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setPayloadSizeLimit(
+    _dstChainId: PromiseOrValue<BigNumberish>,
+    _size: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setPrecrime(
+    _precrime: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setReceiveVersion(
+    _version: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setSendVersion(
+    _version: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setTrustedRemote(
+    _srcChainId: PromiseOrValue<BigNumberish>,
+    _path: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setTrustedRemoteAddress(
+    _remoteChainId: PromiseOrValue<BigNumberish>,
+    _remoteAddress: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -804,9 +1489,19 @@ export interface AtomicSwapV2 extends BaseContract {
   ): Promise<boolean>;
 
   takeSwap(
-    makeswap: IAtomicSwap.TakeSwapMsgStruct,
+    takeswap: IAtomicSwap.TakeSwapMsgStruct,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  trustedRemoteLookup(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   unpause(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -825,6 +1520,8 @@ export interface AtomicSwapV2 extends BaseContract {
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
+
+    DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<BigNumber>;
 
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
@@ -845,7 +1542,7 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<void>;
 
     cancelSwap(
-      makeswap: IAtomicSwap.CancelSwapMsgStruct,
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -863,8 +1560,44 @@ export interface AtomicSwapV2 extends BaseContract {
       }
     >;
 
+    estimateFee(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _useZro: PromiseOrValue<boolean>,
+      _adapterParams: PromiseOrValue<BytesLike>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { nativeFee: BigNumber; zroFee: BigNumber }
+    >;
+
+    failedMessages(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BytesLike>,
+      arg2: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    forceResumeReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    getConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      arg2: PromiseOrValue<string>,
+      _configType: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     getRoleAdmin(
       role: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -882,6 +1615,8 @@ export interface AtomicSwapV2 extends BaseContract {
 
     initialize(
       _admin: PromiseOrValue<string>,
+      _chainID: PromiseOrValue<BigNumberish>,
+      _endpoint: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -895,8 +1630,38 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    isTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    lzEndpoint(overrides?: CallOverrides): Promise<string>;
+
+    lzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     makeSwap(
       makeswap: IAtomicSwap.MakeSwapMsgStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    minDstGasLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    nonblockingLzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -905,11 +1670,20 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    owner(overrides?: CallOverrides): Promise<string>;
+
     paginationSize(overrides?: CallOverrides): Promise<BigNumber>;
 
     pause(overrides?: CallOverrides): Promise<void>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
+
+    payloadSizeLimitLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    precrime(overrides?: CallOverrides): Promise<string>;
 
     proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
@@ -923,9 +1697,19 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
     renounceRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    retryMessage(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -935,8 +1719,62 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      _configType: PromiseOrValue<BigNumberish>,
+      _config: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMinDstGas(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _packetType: PromiseOrValue<BigNumberish>,
+      _minGas: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setOracle(
+      dstChainId: PromiseOrValue<BigNumberish>,
+      oracle: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setPaginationSize(
       _paginationSize: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPayloadSizeLimit(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _size: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPrecrime(
+      _precrime: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setReceiveVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setSendVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _path: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
+      _remoteAddress: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -946,9 +1784,19 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<boolean>;
 
     takeSwap(
-      makeswap: IAtomicSwap.TakeSwapMsgStruct,
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    trustedRemoteLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     unpause(overrides?: CallOverrides): Promise<void>;
 
@@ -990,6 +1838,30 @@ export interface AtomicSwapV2 extends BaseContract {
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
 
+    "MessageFailed(uint16,bytes,uint64,bytes,bytes)"(
+      _srcChainId?: null,
+      _srcAddress?: null,
+      _nonce?: null,
+      _payload?: null,
+      _reason?: null
+    ): MessageFailedEventFilter;
+    MessageFailed(
+      _srcChainId?: null,
+      _srcAddress?: null,
+      _nonce?: null,
+      _payload?: null,
+      _reason?: null
+    ): MessageFailedEventFilter;
+
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
 
@@ -1005,6 +1877,19 @@ export interface AtomicSwapV2 extends BaseContract {
       daoShare?: null,
       burned?: null
     ): PaymentReceivedEventFilter;
+
+    "RetryMessageSuccess(uint16,bytes,uint64,bytes32)"(
+      _srcChainId?: null,
+      _srcAddress?: null,
+      _nonce?: null,
+      _payloadHash?: null
+    ): RetryMessageSuccessEventFilter;
+    RetryMessageSuccess(
+      _srcChainId?: null,
+      _srcAddress?: null,
+      _nonce?: null,
+      _payloadHash?: null
+    ): RetryMessageSuccessEventFilter;
 
     "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: PromiseOrValue<BytesLike> | null,
@@ -1039,6 +1924,38 @@ export interface AtomicSwapV2 extends BaseContract {
       sender?: PromiseOrValue<string> | null
     ): RoleRevokedEventFilter;
 
+    "SetMinDstGas(uint16,uint16,uint256)"(
+      _dstChainId?: null,
+      _type?: null,
+      _minDstGas?: null
+    ): SetMinDstGasEventFilter;
+    SetMinDstGas(
+      _dstChainId?: null,
+      _type?: null,
+      _minDstGas?: null
+    ): SetMinDstGasEventFilter;
+
+    "SetPrecrime(address)"(precrime?: null): SetPrecrimeEventFilter;
+    SetPrecrime(precrime?: null): SetPrecrimeEventFilter;
+
+    "SetTrustedRemote(uint16,bytes)"(
+      _remoteChainId?: null,
+      _path?: null
+    ): SetTrustedRemoteEventFilter;
+    SetTrustedRemote(
+      _remoteChainId?: null,
+      _path?: null
+    ): SetTrustedRemoteEventFilter;
+
+    "SetTrustedRemoteAddress(uint16,bytes)"(
+      _remoteChainId?: null,
+      _remoteAddress?: null
+    ): SetTrustedRemoteAddressEventFilter;
+    SetTrustedRemoteAddress(
+      _remoteChainId?: null,
+      _remoteAddress?: null
+    ): SetTrustedRemoteAddressEventFilter;
+
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
 
@@ -1052,6 +1969,8 @@ export interface AtomicSwapV2 extends BaseContract {
 
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<BigNumber>;
 
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1072,14 +1991,48 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<BigNumber>;
 
     cancelSwap(
-      makeswap: IAtomicSwap.CancelSwapMsgStruct,
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
 
+    estimateFee(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _useZro: PromiseOrValue<boolean>,
+      _adapterParams: PromiseOrValue<BytesLike>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    failedMessages(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BytesLike>,
+      arg2: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    forceResumeReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      arg2: PromiseOrValue<string>,
+      _configType: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getRoleAdmin(
       role: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1097,6 +2050,8 @@ export interface AtomicSwapV2 extends BaseContract {
 
     initialize(
       _admin: PromiseOrValue<string>,
+      _chainID: PromiseOrValue<BigNumberish>,
+      _endpoint: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1110,15 +2065,47 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    isTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    lzEndpoint(overrides?: CallOverrides): Promise<BigNumber>;
+
+    lzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     makeSwap(
       makeswap: IAtomicSwap.MakeSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    minDstGasLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    nonblockingLzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     nonces(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     paginationSize(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1127,6 +2114,13 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
+
+    payloadSizeLimitLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    precrime(overrides?: CallOverrides): Promise<BigNumber>;
 
     proxiableUUID(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1140,10 +2134,22 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     renounceRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    retryMessage(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     revokeRole(
@@ -1152,8 +2158,62 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    setConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      _configType: PromiseOrValue<BigNumberish>,
+      _config: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setMinDstGas(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _packetType: PromiseOrValue<BigNumberish>,
+      _minGas: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setOracle(
+      dstChainId: PromiseOrValue<BigNumberish>,
+      oracle: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     setPaginationSize(
       _paginationSize: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setPayloadSizeLimit(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _size: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setPrecrime(
+      _precrime: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setReceiveVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setSendVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _path: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
+      _remoteAddress: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1163,8 +2223,18 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<BigNumber>;
 
     takeSwap(
-      makeswap: IAtomicSwap.TakeSwapMsgStruct,
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    trustedRemoteLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     unpause(
@@ -1185,6 +2255,10 @@ export interface AtomicSwapV2 extends BaseContract {
 
   populateTransaction: {
     DEFAULT_ADMIN_ROLE(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    DEFAULT_PAYLOAD_SIZE_LIMIT(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1209,14 +2283,48 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     cancelSwap(
-      makeswap: IAtomicSwap.CancelSwapMsgStruct,
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    estimateFee(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _useZro: PromiseOrValue<boolean>,
+      _adapterParams: PromiseOrValue<BytesLike>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    failedMessages(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BytesLike>,
+      arg2: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    forceResumeReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      arg2: PromiseOrValue<string>,
+      _configType: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getRoleAdmin(
       role: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1234,6 +2342,8 @@ export interface AtomicSwapV2 extends BaseContract {
 
     initialize(
       _admin: PromiseOrValue<string>,
+      _chainID: PromiseOrValue<BigNumberish>,
+      _endpoint: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1247,15 +2357,47 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    lzEndpoint(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    lzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     makeSwap(
       makeswap: IAtomicSwap.MakeSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    minDstGasLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    nonblockingLzReceive(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     nonces(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     paginationSize(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1264,6 +2406,13 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    payloadSizeLimitLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    precrime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     proxiableUUID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1277,10 +2426,22 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     renounceRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    retryMessage(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     revokeRole(
@@ -1289,8 +2450,62 @@ export interface AtomicSwapV2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    setConfig(
+      _version: PromiseOrValue<BigNumberish>,
+      _chainId: PromiseOrValue<BigNumberish>,
+      _configType: PromiseOrValue<BigNumberish>,
+      _config: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMinDstGas(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _packetType: PromiseOrValue<BigNumberish>,
+      _minGas: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setOracle(
+      dstChainId: PromiseOrValue<BigNumberish>,
+      oracle: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     setPaginationSize(
       _paginationSize: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setPayloadSizeLimit(
+      _dstChainId: PromiseOrValue<BigNumberish>,
+      _size: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setPrecrime(
+      _precrime: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setReceiveVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setSendVersion(
+      _version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setTrustedRemote(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _path: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setTrustedRemoteAddress(
+      _remoteChainId: PromiseOrValue<BigNumberish>,
+      _remoteAddress: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1300,8 +2515,18 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     takeSwap(
-      makeswap: IAtomicSwap.TakeSwapMsgStruct,
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    trustedRemoteLookup(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     unpause(

@@ -11,6 +11,11 @@ import type {
 
 const _abi = [
   {
+    inputs: [],
+    name: "AlreaydExistPool",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {

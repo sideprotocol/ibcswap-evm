@@ -3,6 +3,8 @@
 /* eslint-disable */
 import type * as interfaces from "./interfaces";
 export type { interfaces };
+import type * as lzApp from "./lzApp";
+export type { lzApp };
 import type * as presets from "./presets";
 export type { presets };
 import type * as v2 from "./v2";

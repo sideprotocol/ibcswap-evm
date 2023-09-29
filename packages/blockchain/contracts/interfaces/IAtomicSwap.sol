@@ -17,13 +17,20 @@ interface IAtomicSwap {
     struct AtomicSwapOrder {
         bytes32 id;
         Side side;
-        MakeSwapMsg maker;
         Status status;
-        TakeSwapMsg taker;
         address bridge;
-        uint create_at;
-        uint cancel_at;
-        uint complete_at;
+        Coin sellToken;
+        Coin buyToken;
+        address makerSender;
+        address makerReceiver;
+        address desiredTaker;
+        address taker;
+        address takerReceivingAddress;
+        uint createAt;
+        uint cancelAt;
+        uint completeAt;
+        uint16 srcChainID;
+        uint16 dstChainID;
     }
 
     struct Coin {
@@ -33,27 +40,28 @@ interface IAtomicSwap {
 
     // Messages
     struct MakeSwapMsg {
-        Coin sell_token;
-        Coin buy_token;
-        address maker_sender;
-        address maker_receiver;
-        address desired_taker;
-        uint created_at;
-        uint expire_at;
+        Coin sellToken;
+        Coin buyToken;
+        address makerSender;
+        address makerReceiver;
+        address desiredTaker;
+        uint createdAt;
+        uint expireAt;
+        uint16 dstChainID;
     }
 
     struct TakeSwapMsg {
-        bytes32 order_id;
-        Coin sell_token;
+        bytes32 orderID;
+        Coin sellToken;
         address taker;
-        address taker_receiving_address;
-        address created_at;
+        address takerReceivingAddress;
+        address createdAt;
     }
 
     struct CancelSwapMsg {
-        bytes32 order_id;
+        bytes32 orderID;
         address maker;
-        uint created_at;
+        uint createdAt;
     }
 
     // events
@@ -63,4 +71,7 @@ interface IAtomicSwap {
         uint256 daoShare,
         uint256 burned
     );
+
+    // Define errors
+    error AlreaydExistPool();
 }

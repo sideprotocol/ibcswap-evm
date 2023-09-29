@@ -25,6 +25,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAccessControlUpgradeable__factory>;
     getContractFactory(
+      name: "OwnableUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.OwnableUpgradeable__factory>;
+    getContractFactory(
       name: "IERC1822ProxiableUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC1822ProxiableUpgradeable__factory>;
@@ -101,6 +105,42 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ISideOracle__factory>;
     getContractFactory(
+      name: "ILayerZeroEndpointUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILayerZeroEndpointUpgradeable__factory>;
+    getContractFactory(
+      name: "ILayerZeroReceiverUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILayerZeroReceiverUpgradeable__factory>;
+    getContractFactory(
+      name: "ILayerZeroUserApplicationConfigUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILayerZeroUserApplicationConfigUpgradeable__factory>;
+    getContractFactory(
+      name: "IStargateFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStargateFactory__factory>;
+    getContractFactory(
+      name: "IStargatePool",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStargatePool__factory>;
+    getContractFactory(
+      name: "IStargateReceiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStargateReceiver__factory>;
+    getContractFactory(
+      name: "IStargateRouter",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStargateRouter__factory>;
+    getContractFactory(
+      name: "IStargateRouterETH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStargateRouterETH__factory>;
+    getContractFactory(
+      name: "IStargateWidget",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStargateWidget__factory>;
+    getContractFactory(
       name: "IMedianizer",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IMedianizer__factory>;
@@ -108,6 +148,14 @@ declare module "hardhat/types/runtime" {
       name: "IStdReference",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IStdReference__factory>;
+    getContractFactory(
+      name: "LzAppUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LzAppUpgradeable__factory>;
+    getContractFactory(
+      name: "NonblockingLzAppUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NonblockingLzAppUpgradeable__factory>;
     getContractFactory(
       name: "OwnablePausableUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -132,6 +180,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IAccessControlUpgradeable>;
+    getContractAt(
+      name: "OwnableUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.OwnableUpgradeable>;
     getContractAt(
       name: "IERC1822ProxiableUpgradeable",
       address: string,
@@ -228,6 +281,51 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ISideOracle>;
     getContractAt(
+      name: "ILayerZeroEndpointUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILayerZeroEndpointUpgradeable>;
+    getContractAt(
+      name: "ILayerZeroReceiverUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILayerZeroReceiverUpgradeable>;
+    getContractAt(
+      name: "ILayerZeroUserApplicationConfigUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILayerZeroUserApplicationConfigUpgradeable>;
+    getContractAt(
+      name: "IStargateFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStargateFactory>;
+    getContractAt(
+      name: "IStargatePool",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStargatePool>;
+    getContractAt(
+      name: "IStargateReceiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStargateReceiver>;
+    getContractAt(
+      name: "IStargateRouter",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStargateRouter>;
+    getContractAt(
+      name: "IStargateRouterETH",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStargateRouterETH>;
+    getContractAt(
+      name: "IStargateWidget",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStargateWidget>;
+    getContractAt(
       name: "IMedianizer",
       address: string,
       signer?: ethers.Signer
@@ -237,6 +335,16 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IStdReference>;
+    getContractAt(
+      name: "LzAppUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LzAppUpgradeable>;
+    getContractAt(
+      name: "NonblockingLzAppUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NonblockingLzAppUpgradeable>;
     getContractAt(
       name: "OwnablePausableUpgradeable",
       address: string,
