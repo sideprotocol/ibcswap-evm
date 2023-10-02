@@ -12,7 +12,27 @@ import type {
 const _abi = [
   {
     inputs: [],
-    name: "AlreaydExistPool",
+    name: "AlreadyCompleted",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "AlreadyExistPool",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NoPermissionToCancel",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NoPermissionToTake",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NonExistPool",
     type: "error",
   },
   {
@@ -25,7 +45,7 @@ const _abi = [
         type: "bytes32",
       },
     ],
-    name: "CreatedAtomicSwapOrder",
+    name: "AtomicSwapOrderCreated",
     type: "event",
   },
   {

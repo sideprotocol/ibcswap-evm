@@ -16,24 +16,24 @@ export interface IAtomicSwapInterface extends utils.Interface {
   functions: {};
 
   events: {
-    "CreatedAtomicSwapOrder(bytes32)": EventFragment;
+    "AtomicSwapOrderCreated(bytes32)": EventFragment;
     "PaymentReceived(address,uint256,uint256,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "CreatedAtomicSwapOrder"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PaymentReceived"): EventFragment;
 }
 
-export interface CreatedAtomicSwapOrderEventObject {
+export interface AtomicSwapOrderCreatedEventObject {
   id: string;
 }
-export type CreatedAtomicSwapOrderEvent = TypedEvent<
+export type AtomicSwapOrderCreatedEvent = TypedEvent<
   [string],
-  CreatedAtomicSwapOrderEventObject
+  AtomicSwapOrderCreatedEventObject
 >;
 
-export type CreatedAtomicSwapOrderEventFilter =
-  TypedEventFilter<CreatedAtomicSwapOrderEvent>;
+export type AtomicSwapOrderCreatedEventFilter =
+  TypedEventFilter<AtomicSwapOrderCreatedEvent>;
 
 export interface PaymentReceivedEventObject {
   payer: string;
@@ -79,12 +79,12 @@ export interface IAtomicSwap extends BaseContract {
   callStatic: {};
 
   filters: {
-    "CreatedAtomicSwapOrder(bytes32)"(
+    "AtomicSwapOrderCreated(bytes32)"(
       id?: PromiseOrValue<BytesLike> | null
-    ): CreatedAtomicSwapOrderEventFilter;
-    CreatedAtomicSwapOrder(
+    ): AtomicSwapOrderCreatedEventFilter;
+    AtomicSwapOrderCreated(
       id?: PromiseOrValue<BytesLike> | null
-    ): CreatedAtomicSwapOrderEventFilter;
+    ): AtomicSwapOrderCreatedEventFilter;
 
     "PaymentReceived(address,uint256,uint256,uint256)"(
       payer?: PromiseOrValue<string> | null,

@@ -29,6 +29,10 @@ import type {
 } from "../common";
 
 export declare namespace IAtomicSwap {
+  export type CancelSwapMsgStruct = { orderID: PromiseOrValue<BytesLike> };
+
+  export type CancelSwapMsgStructOutput = [string] & { orderID: string };
+
   export type CoinStruct = {
     token: PromiseOrValue<string>;
     amount: PromiseOrValue<BigNumberish>;
@@ -66,11 +70,22 @@ export declare namespace IAtomicSwap {
     expireAt: BigNumber;
     dstChainID: number;
   };
+
+  export type TakeSwapMsgStruct = {
+    orderID: PromiseOrValue<BytesLike>;
+    takerReceiver: PromiseOrValue<string>;
+  };
+
+  export type TakeSwapMsgStructOutput = [string, string] & {
+    orderID: string;
+    takerReceiver: string;
+  };
 }
 
 export interface AtomicSwapInterface extends utils.Interface {
   functions: {
     "DEFAULT_PAYLOAD_SIZE_LIMIT()": FunctionFragment;
+    "cancelSwap((bytes32))": FunctionFragment;
     "estimateFee(uint16,bool,bytes,bytes)": FunctionFragment;
     "failedMessages(uint16,bytes,uint64)": FunctionFragment;
     "forceResumeReceive(uint16,bytes)": FunctionFragment;
@@ -83,11 +98,9 @@ export interface AtomicSwapInterface extends utils.Interface {
     "makeSwap(((address,uint256),(address,uint256),address,address,address,uint256,uint16))": FunctionFragment;
     "minDstGasLookup(uint16,uint16)": FunctionFragment;
     "nonblockingLzReceive(uint16,bytes,uint64,bytes)": FunctionFragment;
-    "nonces(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "payloadSizeLimitLookup(uint16)": FunctionFragment;
     "precrime()": FunctionFragment;
-    "proxiableUUID()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "retryMessage(uint16,bytes,uint64,bytes)": FunctionFragment;
     "setConfig(uint16,uint16,uint256,bytes)": FunctionFragment;
@@ -99,15 +112,19 @@ export interface AtomicSwapInterface extends utils.Interface {
     "setSendVersion(uint16)": FunctionFragment;
     "setTrustedRemote(uint16,bytes)": FunctionFragment;
     "setTrustedRemoteAddress(uint16,bytes)": FunctionFragment;
+    "swapOrderID(bytes32)": FunctionFragment;
+    "swapOrderOperators(bytes32)": FunctionFragment;
+    "swapOrderStatus(bytes32)": FunctionFragment;
+    "swapOrderTokens(bytes32)": FunctionFragment;
+    "takeSwap((bytes32,address))": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "trustedRemoteLookup(uint16)": FunctionFragment;
-    "upgradeTo(address)": FunctionFragment;
-    "upgradeToAndCall(address,bytes)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "DEFAULT_PAYLOAD_SIZE_LIMIT"
+      | "cancelSwap"
       | "estimateFee"
       | "failedMessages"
       | "forceResumeReceive"
@@ -120,11 +137,9 @@ export interface AtomicSwapInterface extends utils.Interface {
       | "makeSwap"
       | "minDstGasLookup"
       | "nonblockingLzReceive"
-      | "nonces"
       | "owner"
       | "payloadSizeLimitLookup"
       | "precrime"
-      | "proxiableUUID"
       | "renounceOwnership"
       | "retryMessage"
       | "setConfig"
@@ -136,15 +151,22 @@ export interface AtomicSwapInterface extends utils.Interface {
       | "setSendVersion"
       | "setTrustedRemote"
       | "setTrustedRemoteAddress"
+      | "swapOrderID"
+      | "swapOrderOperators"
+      | "swapOrderStatus"
+      | "swapOrderTokens"
+      | "takeSwap"
       | "transferOwnership"
       | "trustedRemoteLookup"
-      | "upgradeTo"
-      | "upgradeToAndCall"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "DEFAULT_PAYLOAD_SIZE_LIMIT",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelSwap",
+    values: [IAtomicSwap.CancelSwapMsgStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "estimateFee",
@@ -222,20 +244,12 @@ export interface AtomicSwapInterface extends utils.Interface {
       PromiseOrValue<BytesLike>
     ]
   ): string;
-  encodeFunctionData(
-    functionFragment: "nonces",
-    values: [PromiseOrValue<string>]
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "payloadSizeLimitLookup",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "precrime", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "proxiableUUID",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -295,6 +309,26 @@ export interface AtomicSwapInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
+    functionFragment: "swapOrderID",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "swapOrderOperators",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "swapOrderStatus",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "swapOrderTokens",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "takeSwap",
+    values: [IAtomicSwap.TakeSwapMsgStruct]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
@@ -302,19 +336,12 @@ export interface AtomicSwapInterface extends utils.Interface {
     functionFragment: "trustedRemoteLookup",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "upgradeTo",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "upgradeToAndCall",
-    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_PAYLOAD_SIZE_LIMIT",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "cancelSwap", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "estimateFee",
     data: BytesLike
@@ -348,17 +375,12 @@ export interface AtomicSwapInterface extends utils.Interface {
     functionFragment: "nonblockingLzReceive",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "payloadSizeLimitLookup",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "precrime", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "proxiableUUID",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -398,6 +420,23 @@ export interface AtomicSwapInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "swapOrderID",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "swapOrderOperators",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "swapOrderStatus",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "swapOrderTokens",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "takeSwap", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
@@ -405,16 +444,9 @@ export interface AtomicSwapInterface extends utils.Interface {
     functionFragment: "trustedRemoteLookup",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "upgradeToAndCall",
-    data: BytesLike
-  ): Result;
 
   events: {
-    "AdminChanged(address,address)": EventFragment;
-    "BeaconUpgraded(address)": EventFragment;
-    "CreatedAtomicSwapOrder(bytes32)": EventFragment;
+    "AtomicSwapOrderCreated(bytes32)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "MessageFailed(uint16,bytes,uint64,bytes,bytes)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
@@ -424,12 +456,9 @@ export interface AtomicSwapInterface extends utils.Interface {
     "SetPrecrime(address)": EventFragment;
     "SetTrustedRemote(uint16,bytes)": EventFragment;
     "SetTrustedRemoteAddress(uint16,bytes)": EventFragment;
-    "Upgraded(address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CreatedAtomicSwapOrder"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MessageFailed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
@@ -439,40 +468,18 @@ export interface AtomicSwapInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "SetPrecrime"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetTrustedRemote"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetTrustedRemoteAddress"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
 
-export interface AdminChangedEventObject {
-  previousAdmin: string;
-  newAdmin: string;
-}
-export type AdminChangedEvent = TypedEvent<
-  [string, string],
-  AdminChangedEventObject
->;
-
-export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
-
-export interface BeaconUpgradedEventObject {
-  beacon: string;
-}
-export type BeaconUpgradedEvent = TypedEvent<
-  [string],
-  BeaconUpgradedEventObject
->;
-
-export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
-
-export interface CreatedAtomicSwapOrderEventObject {
+export interface AtomicSwapOrderCreatedEventObject {
   id: string;
 }
-export type CreatedAtomicSwapOrderEvent = TypedEvent<
+export type AtomicSwapOrderCreatedEvent = TypedEvent<
   [string],
-  CreatedAtomicSwapOrderEventObject
+  AtomicSwapOrderCreatedEventObject
 >;
 
-export type CreatedAtomicSwapOrderEventFilter =
-  TypedEventFilter<CreatedAtomicSwapOrderEvent>;
+export type AtomicSwapOrderCreatedEventFilter =
+  TypedEventFilter<AtomicSwapOrderCreatedEvent>;
 
 export interface InitializedEventObject {
   version: number;
@@ -577,13 +584,6 @@ export type SetTrustedRemoteAddressEvent = TypedEvent<
 export type SetTrustedRemoteAddressEventFilter =
   TypedEventFilter<SetTrustedRemoteAddressEvent>;
 
-export interface UpgradedEventObject {
-  implementation: string;
-}
-export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>;
-
-export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
-
 export interface AtomicSwap extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
@@ -612,6 +612,11 @@ export interface AtomicSwap extends BaseContract {
 
   functions: {
     DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    cancelSwap(
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     estimateFee(
       _dstChainId: PromiseOrValue<BigNumberish>,
@@ -691,11 +696,6 @@ export interface AtomicSwap extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     payloadSizeLimitLookup(
@@ -704,8 +704,6 @@ export interface AtomicSwap extends BaseContract {
     ): Promise<[BigNumber]>;
 
     precrime(overrides?: CallOverrides): Promise<[string]>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -773,6 +771,57 @@ export interface AtomicSwap extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    swapOrderID(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, number, number] & {
+        id: string;
+        srcChainID: number;
+        dstChainID: number;
+      }
+    >;
+
+    swapOrderOperators(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, string] & {
+        maker: string;
+        taker: string;
+        makerReceiver: string;
+        takerReceiver: string;
+      }
+    >;
+
+    swapOrderStatus(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [number, number, BigNumber, BigNumber, BigNumber] & {
+        side: number;
+        status: number;
+        createdAt: BigNumber;
+        canceledAt: BigNumber;
+        completedAt: BigNumber;
+      }
+    >;
+
+    swapOrderTokens(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [IAtomicSwap.CoinStructOutput, IAtomicSwap.CoinStructOutput] & {
+        sellToken: IAtomicSwap.CoinStructOutput;
+        buyToken: IAtomicSwap.CoinStructOutput;
+      }
+    >;
+
+    takeSwap(
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -782,20 +831,14 @@ export interface AtomicSwap extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<BigNumber>;
+
+  cancelSwap(
+    cancelswap: IAtomicSwap.CancelSwapMsgStruct,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   estimateFee(
     _dstChainId: PromiseOrValue<BigNumberish>,
@@ -875,11 +918,6 @@ export interface AtomicSwap extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  nonces(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   owner(overrides?: CallOverrides): Promise<string>;
 
   payloadSizeLimitLookup(
@@ -888,8 +926,6 @@ export interface AtomicSwap extends BaseContract {
   ): Promise<BigNumber>;
 
   precrime(overrides?: CallOverrides): Promise<string>;
-
-  proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -957,6 +993,57 @@ export interface AtomicSwap extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  swapOrderID(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, number, number] & {
+      id: string;
+      srcChainID: number;
+      dstChainID: number;
+    }
+  >;
+
+  swapOrderOperators(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, string] & {
+      maker: string;
+      taker: string;
+      makerReceiver: string;
+      takerReceiver: string;
+    }
+  >;
+
+  swapOrderStatus(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [number, number, BigNumber, BigNumber, BigNumber] & {
+      side: number;
+      status: number;
+      createdAt: BigNumber;
+      canceledAt: BigNumber;
+      completedAt: BigNumber;
+    }
+  >;
+
+  swapOrderTokens(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [IAtomicSwap.CoinStructOutput, IAtomicSwap.CoinStructOutput] & {
+      sellToken: IAtomicSwap.CoinStructOutput;
+      buyToken: IAtomicSwap.CoinStructOutput;
+    }
+  >;
+
+  takeSwap(
+    takeswap: IAtomicSwap.TakeSwapMsgStruct,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   transferOwnership(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -967,19 +1054,13 @@ export interface AtomicSwap extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  upgradeTo(
-    newImplementation: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  upgradeToAndCall(
-    newImplementation: PromiseOrValue<string>,
-    data: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<BigNumber>;
+
+    cancelSwap(
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     estimateFee(
       _dstChainId: PromiseOrValue<BigNumberish>,
@@ -1059,11 +1140,6 @@ export interface AtomicSwap extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     owner(overrides?: CallOverrides): Promise<string>;
 
     payloadSizeLimitLookup(
@@ -1072,8 +1148,6 @@ export interface AtomicSwap extends BaseContract {
     ): Promise<BigNumber>;
 
     precrime(overrides?: CallOverrides): Promise<string>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -1139,6 +1213,57 @@ export interface AtomicSwap extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    swapOrderID(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, number, number] & {
+        id: string;
+        srcChainID: number;
+        dstChainID: number;
+      }
+    >;
+
+    swapOrderOperators(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, string] & {
+        maker: string;
+        taker: string;
+        makerReceiver: string;
+        takerReceiver: string;
+      }
+    >;
+
+    swapOrderStatus(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [number, number, BigNumber, BigNumber, BigNumber] & {
+        side: number;
+        status: number;
+        createdAt: BigNumber;
+        canceledAt: BigNumber;
+        completedAt: BigNumber;
+      }
+    >;
+
+    swapOrderTokens(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [IAtomicSwap.CoinStructOutput, IAtomicSwap.CoinStructOutput] & {
+        sellToken: IAtomicSwap.CoinStructOutput;
+        buyToken: IAtomicSwap.CoinStructOutput;
+      }
+    >;
+
+    takeSwap(
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1148,42 +1273,15 @@ export interface AtomicSwap extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {
-    "AdminChanged(address,address)"(
-      previousAdmin?: null,
-      newAdmin?: null
-    ): AdminChangedEventFilter;
-    AdminChanged(
-      previousAdmin?: null,
-      newAdmin?: null
-    ): AdminChangedEventFilter;
-
-    "BeaconUpgraded(address)"(
-      beacon?: PromiseOrValue<string> | null
-    ): BeaconUpgradedEventFilter;
-    BeaconUpgraded(
-      beacon?: PromiseOrValue<string> | null
-    ): BeaconUpgradedEventFilter;
-
-    "CreatedAtomicSwapOrder(bytes32)"(
+    "AtomicSwapOrderCreated(bytes32)"(
       id?: PromiseOrValue<BytesLike> | null
-    ): CreatedAtomicSwapOrderEventFilter;
-    CreatedAtomicSwapOrder(
+    ): AtomicSwapOrderCreatedEventFilter;
+    AtomicSwapOrderCreated(
       id?: PromiseOrValue<BytesLike> | null
-    ): CreatedAtomicSwapOrderEventFilter;
+    ): AtomicSwapOrderCreatedEventFilter;
 
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
@@ -1269,17 +1367,15 @@ export interface AtomicSwap extends BaseContract {
       _remoteChainId?: null,
       _remoteAddress?: null
     ): SetTrustedRemoteAddressEventFilter;
-
-    "Upgraded(address)"(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter;
-    Upgraded(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter;
   };
 
   estimateGas: {
     DEFAULT_PAYLOAD_SIZE_LIMIT(overrides?: CallOverrides): Promise<BigNumber>;
+
+    cancelSwap(
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     estimateFee(
       _dstChainId: PromiseOrValue<BigNumberish>,
@@ -1357,11 +1453,6 @@ export interface AtomicSwap extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     payloadSizeLimitLookup(
@@ -1370,8 +1461,6 @@ export interface AtomicSwap extends BaseContract {
     ): Promise<BigNumber>;
 
     precrime(overrides?: CallOverrides): Promise<BigNumber>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1439,6 +1528,31 @@ export interface AtomicSwap extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    swapOrderID(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    swapOrderOperators(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    swapOrderStatus(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    swapOrderTokens(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    takeSwap(
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1448,22 +1562,16 @@ export interface AtomicSwap extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     DEFAULT_PAYLOAD_SIZE_LIMIT(
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    cancelSwap(
+      cancelswap: IAtomicSwap.CancelSwapMsgStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     estimateFee(
@@ -1542,11 +1650,6 @@ export interface AtomicSwap extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     payloadSizeLimitLookup(
@@ -1555,8 +1658,6 @@ export interface AtomicSwap extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     precrime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1624,6 +1725,31 @@ export interface AtomicSwap extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    swapOrderID(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    swapOrderOperators(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    swapOrderStatus(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    swapOrderTokens(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    takeSwap(
+      takeswap: IAtomicSwap.TakeSwapMsgStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1632,17 +1758,6 @@ export interface AtomicSwap extends BaseContract {
     trustedRemoteLookup(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -7,78 +7,89 @@ interface IAtomicSwap {
         TAKESWAP,
         CANCELSWAP
     }
-    // Data types
     enum Side {
-        NATIVE,
-        REMOTE
+        REMOTE,
+        NATIVE
     }
     enum Status {
-        INITIAL,
         SYNC,
+        INITIAL,
         CANCEL,
         FAILED,
         COMPLETE
     }
-    struct AtomicSwapOrder {
+
+    struct Coin {
+        address token;
+        uint256 amount;
+    }
+
+    struct AtomicSwapID {
         bytes32 id;
-        Side side;
-        Status status;
-        address bridge;
-        Coin sellToken;
-        Coin buyToken;
-        address makerSender;
-        address makerReceiver;
-        address desiredTaker;
-        address taker;
-        address takerReceivingAddress;
-        uint createAt;
-        uint cancelAt;
-        uint completeAt;
         uint16 srcChainID;
         uint16 dstChainID;
     }
 
-    struct Coin {
-        address token;
-        uint amount;
+    struct AtomicSwapOperators {
+        address maker;
+        address taker;
+        address makerReceiver;
+        address takerReceiver;
     }
 
-    // Messages
+    struct AtomicSwapTokens {
+        Coin sellToken;
+        Coin buyToken;
+    }
+
+    struct AtomicSwapStatus {
+        Side side;
+        Status status;
+        uint256 createdAt;
+        uint256 canceledAt;
+        uint256 completedAt;
+    }
+
+    struct AtomicSwapBid {
+        Coin bid;
+    }
+
     struct MakeSwapMsg {
         Coin sellToken;
         Coin buyToken;
         address makerSender;
         address makerReceiver;
         address desiredTaker;
-        uint expireAt;
+        uint256 expireAt;
         uint16 dstChainID;
     }
 
     struct TakeSwapMsg {
         bytes32 orderID;
-        Coin sellToken;
-        address taker;
-        address takerReceivingAddress;
-        address createdAt;
+        address takerReceiver;
     }
 
     struct CancelSwapMsg {
         bytes32 orderID;
-        address maker;
-        uint createdAt;
     }
 
-    // events
+    // Events
     event PaymentReceived(
         address indexed payer,
         uint256 amount,
         uint256 daoShare,
         uint256 burned
     );
+    event AtomicSwapOrderCreated(bytes32 indexed id);
 
     // Define errors
-    error AlreaydExistPool();
+    error AlreadyExistPool();
 
-    // Events
-    event CreatedAtomicSwapOrder(bytes32 indexed id);
+    error NonExistPool();
+
+    error NoPermissionToTake();
+
+    error AlreadyCompleted();
+
+    error NoPermissionToCancel();
 }

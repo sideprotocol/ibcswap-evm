@@ -55,18 +55,19 @@ export const Utils = {
 
     // AtomicSwap contract deploy
     const atomicSwapFactory = await ethers.getContractFactory("AtomicSwap");
+
     const atomicSwapA = await upgrades.deployProxy(
       atomicSwapFactory,
       [owner.address, chainID, lzEndpointMock.address],
       {
-        kind: "uups",
+        initializer: "initialize",
       }
     );
     const atomicSwapB = await upgrades.deployProxy(
       atomicSwapFactory,
       [owner.address, chainID, lzEndpointMock.address],
       {
-        kind: "uups",
+        initializer: "initialize",
       }
     );
 
@@ -113,4 +114,21 @@ export function generateRandomString(length: number) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
+}
+
+import { keccak256 } from "ethers/lib/utils";
+
+export function newAtomicSwapOrderID(
+  sender: string,
+  dstChainID: number,
+  chainID: number,
+  swapOrderCounter: number
+): string {
+  const id = keccak256(
+    ethers.utils.defaultAbiCoder.encode(
+      ["uint16", "uint16", "address", "uint256"],
+      [chainID, dstChainID, sender, swapOrderCounter]
+    )
+  );
+  return id;
 }

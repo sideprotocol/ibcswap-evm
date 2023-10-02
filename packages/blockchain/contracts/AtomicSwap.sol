@@ -1,26 +1,30 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/IAtomicSwap.sol";
 import "./lzApp/NonblockingLzAppUpgradeable.sol";
+import "hardhat/console.sol";
 
 contract AtomicSwap is
-    UUPSUpgradeable,
+    OwnableUpgradeable,
     IAtomicSwap,
     NonblockingLzAppUpgradeable
 {
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.Bytes32Set;
+    mapping(bytes32 => AtomicSwapID) public swapOrderID;
+    mapping(bytes32 => AtomicSwapStatus) public swapOrderStatus;
+    mapping(bytes32 => AtomicSwapTokens) public swapOrderTokens;
+    mapping(bytes32 => AtomicSwapOperators) public swapOrderOperators;
 
-    EnumerableSetUpgradeable.Bytes32Set private swapOrderIDs;
-    AtomicSwapOrder[] swapOrders;
-
-    mapping(address => uint256) public nonces;
-
+    uint256 swapOrderCounter;
     uint16 chainID;
+
+    modifier onlyExist(bytes32 id) {
+        if (swapOrderID[id].id == bytes32(0x0)) {
+            revert NonExistPool();
+        }
+        _;
+    }
 
     function initialize(
         address admin,
@@ -33,40 +37,57 @@ contract AtomicSwap is
         chainID = _chainID;
     }
 
-    function _authorizeUpgrade(address) internal override onlyOwner {}
-
     /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
     function makeSwap(MakeSwapMsg calldata makeswap) external payable virtual {
-        // Create atomic order
         bytes32 id = _generateNewAtomicSwapID(msg.sender, makeswap.dstChainID);
-        if (swapOrderIDs.contains(id)) {
-            revert AlreaydExistPool();
-        }
-        AtomicSwapOrder memory _order = _buildAtomicOrderFromMakeSwapMsg(
-            id,
-            makeswap
-        );
-        swapOrders.push(_order);
+        _addNewSwapOrder(id, msg.sender, makeswap, Side.NATIVE, 0x0);
         bytes memory payload = abi.encode(MsgType.MAKESWAP, id, makeswap);
         _lzSendMsg(payload);
-        emit CreatedAtomicSwapOrder(id);
+        emit AtomicSwapOrderCreated(id);
     }
 
     // /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
-    // function takeSwap(TakeSwapMsg calldata takeswap) external payable virtual {
-    //     //
-    //     bytes memory payload = abi.encode(takeswap);
-    //     _lzSendMsg(payload);
-    // }
+    function takeSwap(
+        TakeSwapMsg calldata takeswap
+    ) external payable virtual onlyExist(takeswap.orderID) {
+        AtomicSwapOperators memory _operators = swapOrderOperators[
+            takeswap.orderID
+        ];
+        AtomicSwapStatus memory _orderStatus = swapOrderStatus[
+            takeswap.orderID
+        ];
+
+        if (_operators.taker == address(0) || _operators.taker != msg.sender) {
+            revert NoPermissionToTake();
+        }
+
+        if (_orderStatus.status == Status.COMPLETE) {
+            revert AlreadyCompleted();
+        }
+
+        swapOrderStatus[takeswap.orderID].status = Status.COMPLETE;
+        bytes memory payload = abi.encode(MsgType.TAKESWAP, takeswap);
+        _lzSendMsg(payload);
+    }
 
     // /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
-    // function cancelSwap(
-    //     CancelSwapMsg calldata cancelswap
-    // ) external payable virtual {
-    //     //
-    //     bytes memory payload = abi.encode(cancelswap);
-    //     _lzSendMsg(payload);
-    // }
+    function cancelSwap(
+        CancelSwapMsg calldata cancelswap
+    ) external payable virtual onlyExist(cancelswap.orderID) {
+        AtomicSwapOperators memory _operators = swapOrderOperators[
+            cancelswap.orderID
+        ];
+        if (_operators.maker != msg.sender) {
+            revert NoPermissionToCancel();
+        }
+
+        swapOrderStatus[cancelswap.orderID].status = Status.CANCEL;
+        bytes memory payload = abi.encode(
+            MsgType.CANCELSWAP,
+            cancelswap.orderID
+        );
+        _lzSendMsg(payload);
+    }
 
     function _nonblockingLzReceive(
         uint16 _srcChainID,
@@ -75,27 +96,28 @@ contract AtomicSwap is
         bytes calldata _payload
     ) internal virtual override {
         MsgType msgType = abi.decode(_payload[:32], (MsgType));
-        // MakeSwapMsg
         if (msgType == MsgType.MAKESWAP) {
             bytes32 id = bytes32(_payload[32:64]);
             MakeSwapMsg memory makeswap = abi.decode(
                 _payload[64:],
                 (MakeSwapMsg)
             );
-            if (swapOrderIDs.contains(id)) {
-                revert();
-            }
-            AtomicSwapOrder memory _order = _buildAtomicOrderFromMakeSwapMsg(
+            _addNewSwapOrder(
                 id,
-                makeswap
+                bytesToAddress(_srcAddress),
+                makeswap,
+                Side.REMOTE,
+                _srcChainID
             );
-            // Inverse chainID
-            _order.srcChainID = chainID;
-            _order.dstChainID = _srcChainID;
-            // Set order side.
-            _order.side = Side.REMOTE;
-            // Save order.
-            swapOrders.push(_order);
+        } else if (msgType == MsgType.TAKESWAP) {
+            TakeSwapMsg memory takeswap = abi.decode(
+                _payload[32:],
+                (TakeSwapMsg)
+            );
+            swapOrderStatus[takeswap.orderID].status = Status.COMPLETE;
+        } else if (msgType == MsgType.CANCELSWAP) {
+            bytes32 id = bytes32(_payload[32:]);
+            swapOrderStatus[id].status = Status.CANCEL;
         }
     }
 
@@ -141,32 +163,71 @@ contract AtomicSwap is
     function _generateNewAtomicSwapID(
         address sender,
         uint16 dstChainID
-    ) internal view returns (bytes32 id) {
-        id = keccak256(abi.encode(chainID, dstChainID, sender, nonces[sender]));
+    ) internal returns (bytes32 id) {
+        id = keccak256(
+            abi.encode(chainID, dstChainID, sender, swapOrderCounter)
+        );
+        swapOrderCounter++;
     }
 
-    function _buildAtomicOrderFromMakeSwapMsg(
+    // Refactored functions
+    function _addNewSwapOrder(
         bytes32 id,
-        MakeSwapMsg memory makeswap
-    ) internal view returns (AtomicSwapOrder memory) {
-        return
-            AtomicSwapOrder(
-                id,
-                Side.NATIVE,
-                Status.INITIAL,
-                address(0x0),
-                makeswap.sellToken,
-                makeswap.buyToken,
-                msg.sender,
-                makeswap.makerReceiver,
-                makeswap.desiredTaker,
-                address(0x0),
-                address(0x0),
-                block.timestamp,
-                0,
-                0,
-                chainID,
-                makeswap.dstChainID
-            );
+        address sender,
+        MakeSwapMsg memory makeswap,
+        Side side,
+        uint16 _srcChainID
+    ) private {
+        if (swapOrderID[id].id != bytes32(0x0)) {
+            revert AlreadyExistPool();
+        }
+
+        AtomicSwapID memory _orderID = AtomicSwapID(
+            id,
+            chainID,
+            makeswap.dstChainID
+        );
+
+        AtomicSwapTokens memory _orderTokens = AtomicSwapTokens(
+            makeswap.sellToken,
+            makeswap.buyToken
+        );
+
+        AtomicSwapStatus memory _orderStatus = AtomicSwapStatus(
+            side,
+            Status.INITIAL,
+            block.timestamp,
+            0,
+            0
+        );
+
+        AtomicSwapOperators memory _orderOperators = AtomicSwapOperators(
+            sender,
+            makeswap.desiredTaker,
+            makeswap.makerReceiver,
+            address(0)
+        );
+
+        if (side == Side.REMOTE) {
+            _orderID.srcChainID = chainID;
+            _orderID.dstChainID = _srcChainID;
+            swapOrderOperators[id].taker = _orderOperators.taker;
+        } else {
+            swapOrderOperators[id] = _orderOperators;
+            swapOrderStatus[id] = _orderStatus;
+        }
+
+        swapOrderID[id] = _orderID;
+        swapOrderTokens[id] = _orderTokens;
+
+        emit AtomicSwapOrderCreated(id);
+    }
+
+    function bytesToAddress(
+        bytes memory bys
+    ) private pure returns (address addr) {
+        assembly {
+            addr := mload(add(bys, 20))
+        }
     }
 }

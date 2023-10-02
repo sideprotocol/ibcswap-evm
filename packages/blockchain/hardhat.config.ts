@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
       },
       optimizer: {
         enabled: true,
-        runs: 1000,
+        runs: 1,
       },
       diagnostics: {
         overwriteStack: true,
