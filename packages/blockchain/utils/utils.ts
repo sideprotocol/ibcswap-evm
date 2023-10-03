@@ -7,14 +7,20 @@ import {
 } from "fs";
 
 import { ethers, upgrades } from "hardhat";
-import { LZEndpointMock, AtomicSwap } from "@sideprotocol/contracts-typechain";
+import {
+  LZEndpointMock,
+  AtomicSwap,
+  MockToken,
+  SideLzAppUpgradable,
+} from "@sideprotocol/contracts-typechain";
 export const ERC20_MINT_AMOUNT = 100000000;
 // stable coins
 const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
 const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
-
 const ETH_USDC = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419";
+
+export const WHALES: string[] = [];
 
 export const saveDeployedAddress = async (
   sweeper: string,
@@ -44,7 +50,8 @@ export const saveDeployedAddress = async (
 export const Utils = {
   prepareTest: async function () {
     //import users
-    const [owner] = await ethers.getSigners();
+    const accounts = await ethers.getSigners();
+    const [owner] = accounts;
     //deploy contracts
     // create a LayerZero Endpoint mock for testing
     const chainID = 123;
@@ -53,55 +60,113 @@ export const Utils = {
     );
     const lzEndpointMock = await LayerZeroEndpointMock.deploy(chainID);
 
+    // bridge contract deployment
+    const sideBridgeFactory = await ethers.getContractFactory(
+      "SideLzAppUpgradable"
+    );
+
+    const sideBridgeAtChainA = await upgrades.deployProxy(
+      sideBridgeFactory,
+      [owner.address, lzEndpointMock.address],
+      {
+        initializer: "initialize",
+      }
+    );
+
+    const sideBridgeAtChainB = await upgrades.deployProxy(
+      sideBridgeFactory,
+      [owner.address, lzEndpointMock.address],
+      {
+        initializer: "initialize",
+      }
+    );
+
     // AtomicSwap contract deploy
     const atomicSwapFactory = await ethers.getContractFactory("AtomicSwap");
 
     const atomicSwapA = await upgrades.deployProxy(
       atomicSwapFactory,
-      [owner.address, chainID, lzEndpointMock.address],
+      [owner.address, chainID, sideBridgeAtChainA.address],
       {
         initializer: "initialize",
       }
     );
     const atomicSwapB = await upgrades.deployProxy(
       atomicSwapFactory,
-      [owner.address, chainID, lzEndpointMock.address],
+      [owner.address, chainID, sideBridgeAtChainB.address],
       {
         initializer: "initialize",
       }
     );
 
-    // Setup layerzero endpoint
+    // Setup layer zero endpoint
     await lzEndpointMock.setDestLzEndpoint(
-      atomicSwapA.address,
+      sideBridgeAtChainA.address,
       lzEndpointMock.address
     );
     await lzEndpointMock.setDestLzEndpoint(
-      atomicSwapB.address,
+      sideBridgeAtChainB.address,
       lzEndpointMock.address
     );
 
     // set each contracts source address so it can send to each other
-    await atomicSwapA.setTrustedRemote(
+    await sideBridgeAtChainA.setTrustedRemote(
       chainID,
       ethers.utils.solidityPack(
         ["address", "address"],
-        [atomicSwapB.address, atomicSwapA.address]
+        [sideBridgeAtChainB.address, sideBridgeAtChainA.address]
       )
     );
-    await atomicSwapB.setTrustedRemote(
+    await sideBridgeAtChainB.setTrustedRemote(
       chainID,
       ethers.utils.solidityPack(
         ["address", "address"],
-        [atomicSwapA.address, atomicSwapB.address]
+        [sideBridgeAtChainA.address, sideBridgeAtChainB.address]
       )
+    );
+
+    await sideBridgeAtChainA.setPacketReceivers(
+      atomicSwapA.address,
+      ethers.constants.AddressZero
+    );
+
+    await sideBridgeAtChainB.setPacketReceivers(
+      atomicSwapB.address,
+      ethers.constants.AddressZero
+    );
+
+    // Deploy Mock Token
+    const mockERC20TokenFactory = await ethers.getContractFactory("MockToken");
+    const mockUSDC = await mockERC20TokenFactory.deploy("USDC", "USDC");
+    const mockUSDT = await mockERC20TokenFactory.deploy("USDT", "USDT");
+    const mockDAI = await mockERC20TokenFactory.deploy("DAI", "DAI");
+    const MINT_AMOUNT = ethers.utils.parseEther("100000");
+
+    await Promise.all(
+      accounts.map(async (account) => {
+        await mockUSDC.mint(account.address, MINT_AMOUNT);
+        await mockUSDT.mint(account.address, MINT_AMOUNT);
+        await mockDAI.mint(account.address, MINT_AMOUNT);
+
+        await mockUSDC.approve(atomicSwapA.address, MINT_AMOUNT);
+        await mockUSDC.approve(atomicSwapB.address, MINT_AMOUNT);
+        await mockUSDT.approve(atomicSwapA.address, MINT_AMOUNT);
+        await mockUSDT.approve(atomicSwapB.address, MINT_AMOUNT);
+        await mockDAI.approve(atomicSwapA.address, MINT_AMOUNT);
+        await mockDAI.approve(atomicSwapB.address, MINT_AMOUNT);
+      })
     );
 
     return {
       chainID: chainID,
+      bridgeA: sideBridgeAtChainA as SideLzAppUpgradable,
+      bridgeB: sideBridgeAtChainB as SideLzAppUpgradable,
       lzEndpointMock: lzEndpointMock as LZEndpointMock,
       atomicSwapA: atomicSwapA as AtomicSwap,
       atomicSwapB: atomicSwapB as AtomicSwap,
+      usdc: mockUSDC as MockToken,
+      usdt: mockUSDT as MockToken,
+      dai: mockDAI as MockToken,
     };
   },
 };

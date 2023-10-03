@@ -2,6 +2,13 @@
 pragma solidity ^0.8.9;
 
 interface IAtomicSwap {
+    function onReceivePacket(
+        uint16 _srcChainId,
+        bytes memory _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    ) external;
+
     enum MsgType {
         MAKESWAP,
         TAKESWAP,
@@ -19,6 +26,11 @@ interface IAtomicSwap {
         COMPLETE
     }
 
+    enum PoolType {
+        INCHAIN,
+        INTERCHAIN
+    }
+
     struct Coin {
         address token;
         uint256 amount;
@@ -28,6 +40,7 @@ interface IAtomicSwap {
         bytes32 id;
         uint16 srcChainID;
         uint16 dstChainID;
+        PoolType poolType;
     }
 
     struct AtomicSwapOperators {
@@ -37,10 +50,12 @@ interface IAtomicSwap {
         address takerReceiver;
     }
 
-    struct AtomicSwapTokens {
-        Coin sellToken;
-        Coin buyToken;
-    }
+    // struct AtomicSwapSellToken
+
+    // struct AtomicSwapSellTokens {
+    //     Coin sellToken;
+    //     Coin buyToken;
+    // }
 
     struct AtomicSwapStatus {
         Side side;
@@ -62,6 +77,7 @@ interface IAtomicSwap {
         address desiredTaker;
         uint256 expireAt;
         uint16 dstChainID;
+        PoolType poolType;
     }
 
     struct TakeSwapMsg {
@@ -81,6 +97,11 @@ interface IAtomicSwap {
         uint256 burned
     );
     event AtomicSwapOrderCreated(bytes32 indexed id);
+    event AtomicSwapOrderTook(
+        address indexed maker,
+        address indexed taker,
+        bytes32 indexed id
+    );
 
     // Define errors
     error AlreadyExistPool();
@@ -92,4 +113,12 @@ interface IAtomicSwap {
     error AlreadyCompleted();
 
     error NoPermissionToCancel();
+
+    error NotAllowedAmount();
+
+    error InvalidTokenPair();
+
+    error ZeroTokenAddress();
+
+    error NotOwnerOfToken();
 }

@@ -5,16 +5,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/IAtomicSwap.sol";
 import "./lzApp/NonblockingLzAppUpgradeable.sol";
 import "hardhat/console.sol";
+import "./interfaces/ISideLzAppUpgradable.sol";
 
-contract AtomicSwap is
-    OwnableUpgradeable,
-    IAtomicSwap,
-    NonblockingLzAppUpgradeable
-{
+contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
+    ISideLzAppUpgradable public bridge;
+
     mapping(bytes32 => AtomicSwapID) public swapOrderID;
     mapping(bytes32 => AtomicSwapStatus) public swapOrderStatus;
-    mapping(bytes32 => AtomicSwapTokens) public swapOrderTokens;
     mapping(bytes32 => AtomicSwapOperators) public swapOrderOperators;
+    mapping(bytes32 => Coin) public swapOrderSellToken;
+    mapping(bytes32 => Coin) public swapOrderBuyToken;
 
     uint256 swapOrderCounter;
     uint16 chainID;
@@ -29,45 +29,134 @@ contract AtomicSwap is
     function initialize(
         address admin,
         uint16 _chainID,
-        address _endpoint
-    ) external initializer {
+        address _bridge
+    )
+        external
+        //address _endpoint
+        initializer
+    {
         __Ownable_init_unchained();
         transferOwnership(admin);
-        __NonblockingLzAppUpgradeable_init(_endpoint);
+        bridge = ISideLzAppUpgradable(_bridge);
         chainID = _chainID;
     }
 
     /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
     function makeSwap(MakeSwapMsg calldata makeswap) external payable virtual {
+        // Validate msg basically
+        if (makeswap.sellToken.token == makeswap.buyToken.token) {
+            revert InvalidTokenPair();
+        }
+        if (
+            makeswap.sellToken.token == address(0) ||
+            makeswap.buyToken.token == address(0)
+        ) {
+            revert ZeroTokenAddress();
+        }
+
+        if (makeswap.makerSender != msg.sender) {
+            revert NotOwnerOfToken();
+        }
+
+        // Lock token to smart contract.
+        IERC20 sellToken = IERC20(makeswap.sellToken.token);
+
+        if (
+            sellToken.allowance(msg.sender, address(this)) <
+            makeswap.sellToken.amount
+        ) {
+            revert NotAllowedAmount();
+        }
+
+        require(
+            sellToken.transferFrom(
+                msg.sender,
+                address(this),
+                makeswap.sellToken.amount
+            ),
+            "Failed in Lock token"
+        );
+
+        // Generate ID
         bytes32 id = _generateNewAtomicSwapID(msg.sender, makeswap.dstChainID);
         _addNewSwapOrder(id, msg.sender, makeswap, Side.NATIVE, 0x0);
-        bytes memory payload = abi.encode(MsgType.MAKESWAP, id, makeswap);
-        _lzSendMsg(payload);
+        bytes memory payload = abi.encode(0, MsgType.MAKESWAP, id, makeswap);
+
+        // Send Interchain message.
+        if (makeswap.poolType == PoolType.INTERCHAIN) {
+            bridge.sendLzMsg{value: msg.value}(
+                chainID,
+                payable(msg.sender),
+                payload
+            );
+        }
+
         emit AtomicSwapOrderCreated(id);
     }
 
-    // /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
+    /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
     function takeSwap(
         TakeSwapMsg calldata takeswap
     ) external payable virtual onlyExist(takeswap.orderID) {
-        AtomicSwapOperators memory _operators = swapOrderOperators[
+        AtomicSwapOperators storage _operators = swapOrderOperators[
             takeswap.orderID
         ];
-        AtomicSwapStatus memory _orderStatus = swapOrderStatus[
+        AtomicSwapStatus storage _orderStatus = swapOrderStatus[
             takeswap.orderID
         ];
 
-        if (_operators.taker == address(0) || _operators.taker != msg.sender) {
-            revert NoPermissionToTake();
+        require(_operators.taker == msg.sender, "NoPermissionToTake");
+        require(_orderStatus.status != Status.COMPLETE, "AlreadyCompleted");
+
+        _orderStatus.status = Status.COMPLETE;
+
+        bytes memory payload = abi.encode(0, MsgType.TAKESWAP, takeswap);
+
+        if (swapOrderID[takeswap.orderID].poolType == PoolType.INTERCHAIN) {
+            bridge.sendLzMsg{value: msg.value}(
+                chainID,
+                payable(msg.sender),
+                payload
+            );
+            return;
         }
 
-        if (_orderStatus.status == Status.COMPLETE) {
-            revert AlreadyCompleted();
+        Coin storage _buyCoin = swapOrderBuyToken[takeswap.orderID];
+
+        IERC20 _buyToken = IERC20(_buyCoin.token);
+        if (_buyToken.allowance(msg.sender, address(this)) < _buyCoin.amount) {
+            revert NotAllowedAmount();
         }
 
-        swapOrderStatus[takeswap.orderID].status = Status.COMPLETE;
-        bytes memory payload = abi.encode(MsgType.TAKESWAP, takeswap);
-        _lzSendMsg(payload);
+        require(
+            _buyToken.transferFrom(
+                msg.sender,
+                _operators.makerReceiver,
+                _buyCoin.amount
+            ),
+            "Failed in token transfer"
+        );
+
+        if (swapOrderID[takeswap.orderID].poolType == PoolType.INTERCHAIN) {
+            bridge.sendLzMsg{value: msg.value}(
+                chainID,
+                payable(msg.sender),
+                payload
+            );
+        } else {
+            Coin storage _sellCoin = swapOrderSellToken[takeswap.orderID];
+            IERC20 _sellToken = IERC20(_sellCoin.token);
+            require(
+                _sellToken.transfer(_operators.takerReceiver, _sellCoin.amount),
+                "Failed in token transfer"
+            );
+        }
+
+        emit AtomicSwapOrderTook(
+            _operators.maker,
+            _operators.taker,
+            takeswap.orderID
+        );
     }
 
     // /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
@@ -83,18 +172,23 @@ contract AtomicSwap is
 
         swapOrderStatus[cancelswap.orderID].status = Status.CANCEL;
         bytes memory payload = abi.encode(
+            0,
             MsgType.CANCELSWAP,
             cancelswap.orderID
         );
-        _lzSendMsg(payload);
+        bridge.sendLzMsg{value: msg.value}(
+            chainID,
+            payable(msg.sender),
+            payload
+        );
     }
 
-    function _nonblockingLzReceive(
+    function onReceivePacket(
         uint16 _srcChainID,
         bytes memory _srcAddress,
         uint64 _nonce,
         bytes calldata _payload
-    ) internal virtual override {
+    ) public virtual override {
         MsgType msgType = abi.decode(_payload[:32], (MsgType));
         if (msgType == MsgType.MAKESWAP) {
             bytes32 id = bytes32(_payload[32:64]);
@@ -119,44 +213,6 @@ contract AtomicSwap is
             bytes32 id = bytes32(_payload[32:]);
             swapOrderStatus[id].status = Status.CANCEL;
         }
-    }
-
-    function estimateFee(
-        uint16 _dstChainId,
-        bool _useZro,
-        bytes calldata _adapterParams,
-        bytes calldata _payload
-    ) public view returns (uint nativeFee, uint zroFee) {
-        return
-            lzEndpoint.estimateFees(
-                _dstChainId,
-                address(this),
-                _payload,
-                _useZro,
-                _adapterParams
-            );
-    }
-
-    function setOracle(uint16 dstChainId, address oracle) external onlyOwner {
-        uint TYPE_ORACLE = 6;
-        // set the Oracle
-        lzEndpoint.setConfig(
-            lzEndpoint.getSendVersion(address(this)),
-            dstChainId,
-            TYPE_ORACLE,
-            abi.encode(oracle)
-        );
-    }
-
-    function _lzSendMsg(bytes memory payload) private {
-        _lzSend(
-            chainID,
-            payload,
-            payable(msg.sender),
-            address(0x0),
-            bytes(""),
-            msg.value
-        );
     }
 
     // Generate AtomicOrder ID
@@ -185,12 +241,15 @@ contract AtomicSwap is
         AtomicSwapID memory _orderID = AtomicSwapID(
             id,
             chainID,
-            makeswap.dstChainID
+            makeswap.dstChainID,
+            makeswap.poolType
         );
 
-        AtomicSwapTokens memory _orderTokens = AtomicSwapTokens(
-            makeswap.sellToken,
-            makeswap.buyToken
+        AtomicSwapOperators memory _operators = AtomicSwapOperators(
+            sender,
+            makeswap.desiredTaker,
+            makeswap.makerReceiver,
+            makeswap.desiredTaker
         );
 
         AtomicSwapStatus memory _orderStatus = AtomicSwapStatus(
@@ -201,25 +260,18 @@ contract AtomicSwap is
             0
         );
 
-        AtomicSwapOperators memory _orderOperators = AtomicSwapOperators(
-            sender,
-            makeswap.desiredTaker,
-            makeswap.makerReceiver,
-            address(0)
-        );
-
         if (side == Side.REMOTE) {
             _orderID.srcChainID = chainID;
             _orderID.dstChainID = _srcChainID;
-            swapOrderOperators[id].taker = _orderOperators.taker;
+            swapOrderOperators[id].taker = _operators.taker;
         } else {
-            swapOrderOperators[id] = _orderOperators;
+            swapOrderOperators[id] = _operators;
+            swapOrderSellToken[id] = makeswap.sellToken;
             swapOrderStatus[id] = _orderStatus;
         }
 
         swapOrderID[id] = _orderID;
-        swapOrderTokens[id] = _orderTokens;
-
+        swapOrderBuyToken[id] = makeswap.buyToken;
         emit AtomicSwapOrderCreated(id);
     }
 

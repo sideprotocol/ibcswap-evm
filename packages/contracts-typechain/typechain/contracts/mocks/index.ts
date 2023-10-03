@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { LZEndpointMock } from "./LZEndpointMock";
+export type { MockToken } from "./MockToken";

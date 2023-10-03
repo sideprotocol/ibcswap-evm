@@ -4,6 +4,7 @@
 import type {
   BaseContract,
   BigNumber,
+  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
@@ -30,6 +31,7 @@ import type {
 export interface InterchainSwapInterface extends utils.Interface {
   functions: {
     "initialize(address)": FunctionFragment;
+    "onReceivePacket(uint16,bytes,uint64,bytes)": FunctionFragment;
     "proxiableUUID()": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
@@ -38,6 +40,7 @@ export interface InterchainSwapInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "initialize"
+      | "onReceivePacket"
       | "proxiableUUID"
       | "upgradeTo"
       | "upgradeToAndCall"
@@ -46,6 +49,15 @@ export interface InterchainSwapInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "initialize",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "onReceivePacket",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "proxiableUUID",
@@ -62,6 +74,10 @@ export interface InterchainSwapInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "onReceivePacket",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "proxiableUUID",
     data: BytesLike
   ): Result;
@@ -75,14 +91,12 @@ export interface InterchainSwapInterface extends utils.Interface {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "Initialized(uint8)": EventFragment;
-    "PaymentReceived(address,uint256,uint256,uint256)": EventFragment;
     "Upgraded(address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PaymentReceived"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
 
@@ -113,19 +127,6 @@ export interface InitializedEventObject {
 export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
-
-export interface PaymentReceivedEventObject {
-  payer: string;
-  amount: BigNumber;
-  daoShare: BigNumber;
-  burned: BigNumber;
-}
-export type PaymentReceivedEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber],
-  PaymentReceivedEventObject
->;
-
-export type PaymentReceivedEventFilter = TypedEventFilter<PaymentReceivedEvent>;
 
 export interface UpgradedEventObject {
   implementation: string;
@@ -166,6 +167,14 @@ export interface InterchainSwap extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    onReceivePacket(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
 
     upgradeTo(
@@ -185,6 +194,14 @@ export interface InterchainSwap extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  onReceivePacket(
+    _srcChainId: PromiseOrValue<BigNumberish>,
+    _srcAddress: PromiseOrValue<BytesLike>,
+    _nonce: PromiseOrValue<BigNumberish>,
+    _payload: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
   upgradeTo(
@@ -201,6 +218,14 @@ export interface InterchainSwap extends BaseContract {
   callStatic: {
     initialize(
       _admin: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    onReceivePacket(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -238,19 +263,6 @@ export interface InterchainSwap extends BaseContract {
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
 
-    "PaymentReceived(address,uint256,uint256,uint256)"(
-      payer?: PromiseOrValue<string> | null,
-      amount?: null,
-      daoShare?: null,
-      burned?: null
-    ): PaymentReceivedEventFilter;
-    PaymentReceived(
-      payer?: PromiseOrValue<string> | null,
-      amount?: null,
-      daoShare?: null,
-      burned?: null
-    ): PaymentReceivedEventFilter;
-
     "Upgraded(address)"(
       implementation?: PromiseOrValue<string> | null
     ): UpgradedEventFilter;
@@ -262,6 +274,14 @@ export interface InterchainSwap extends BaseContract {
   estimateGas: {
     initialize(
       _admin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    onReceivePacket(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -282,6 +302,14 @@ export interface InterchainSwap extends BaseContract {
   populateTransaction: {
     initialize(
       _admin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    onReceivePacket(
+      _srcChainId: PromiseOrValue<BigNumberish>,
+      _srcAddress: PromiseOrValue<BytesLike>,
+      _nonce: PromiseOrValue<BigNumberish>,
+      _payload: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

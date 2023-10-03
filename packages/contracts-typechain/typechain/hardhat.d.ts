@@ -49,6 +49,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ContextUpgradeable__factory>;
     getContractFactory(
+      name: "ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20__factory>;
+    getContractFactory(
+      name: "IERC20Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20Metadata__factory>;
+    getContractFactory(
       name: "IERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
@@ -68,6 +76,10 @@ declare module "hardhat/types/runtime" {
       name: "IInterchainSwap",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IInterchainSwap__factory>;
+    getContractFactory(
+      name: "ISideLzAppUpgradable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISideLzAppUpgradable__factory>;
     getContractFactory(
       name: "ISideOracle",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -137,9 +149,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NonblockingLzAppUpgradeable__factory>;
     getContractFactory(
+      name: "SideLzAppUpgradable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SideLzAppUpgradable__factory>;
+    getContractFactory(
       name: "LZEndpointMock",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LZEndpointMock__factory>;
+    getContractFactory(
+      name: "MockToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockToken__factory>;
     getContractFactory(
       name: "AtomicSwapV2",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -191,6 +211,16 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ContextUpgradeable>;
     getContractAt(
+      name: "ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20>;
+    getContractAt(
+      name: "IERC20Metadata",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20Metadata>;
+    getContractAt(
       name: "IERC20",
       address: string,
       signer?: ethers.Signer
@@ -215,6 +245,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IInterchainSwap>;
+    getContractAt(
+      name: "ISideLzAppUpgradable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISideLzAppUpgradable>;
     getContractAt(
       name: "ISideOracle",
       address: string,
@@ -301,10 +336,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.NonblockingLzAppUpgradeable>;
     getContractAt(
+      name: "SideLzAppUpgradable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SideLzAppUpgradable>;
+    getContractAt(
       name: "LZEndpointMock",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.LZEndpointMock>;
+    getContractAt(
+      name: "MockToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockToken>;
     getContractAt(
       name: "AtomicSwapV2",
       address: string,

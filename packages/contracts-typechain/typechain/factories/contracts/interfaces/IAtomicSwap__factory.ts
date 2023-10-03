@@ -22,6 +22,11 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "InvalidTokenPair",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "NoPermissionToCancel",
     type: "error",
   },
@@ -36,6 +41,21 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [],
+    name: "NotAllowedAmount",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotOwnerOfToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "ZeroTokenAddress",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -46,6 +66,31 @@ const _abi = [
       },
     ],
     name: "AtomicSwapOrderCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "maker",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "taker",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "id",
+        type: "bytes32",
+      },
+    ],
+    name: "AtomicSwapOrderTook",
     type: "event",
   },
   {
@@ -78,6 +123,34 @@ const _abi = [
     ],
     name: "PaymentReceived",
     type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint16",
+        name: "_srcChainId",
+        type: "uint16",
+      },
+      {
+        internalType: "bytes",
+        name: "_srcAddress",
+        type: "bytes",
+      },
+      {
+        internalType: "uint64",
+        name: "_nonce",
+        type: "uint64",
+      },
+      {
+        internalType: "bytes",
+        name: "_payload",
+        type: "bytes",
+      },
+    ],
+    name: "onReceivePacket",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
 ] as const;
 
