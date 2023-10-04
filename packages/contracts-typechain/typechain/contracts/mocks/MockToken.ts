@@ -34,9 +34,11 @@ export interface MockTokenInterface extends utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
+    "failTransferFrom()": FunctionFragment;
     "increaseAllowance(address,uint256)": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
     "name()": FunctionFragment;
+    "setFailTransferFrom(bool)": FunctionFragment;
     "symbol()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
@@ -50,9 +52,11 @@ export interface MockTokenInterface extends utils.Interface {
       | "balanceOf"
       | "decimals"
       | "decreaseAllowance"
+      | "failTransferFrom"
       | "increaseAllowance"
       | "mint"
       | "name"
+      | "setFailTransferFrom"
       | "symbol"
       | "totalSupply"
       | "transfer"
@@ -77,6 +81,10 @@ export interface MockTokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "failTransferFrom",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "increaseAllowance",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -85,6 +93,10 @@ export interface MockTokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "setFailTransferFrom",
+    values: [PromiseOrValue<boolean>]
+  ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -112,11 +124,19 @@ export interface MockTokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "failTransferFrom",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "increaseAllowance",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setFailTransferFrom",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
@@ -213,6 +233,8 @@ export interface MockToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    failTransferFrom(overrides?: CallOverrides): Promise<[boolean]>;
+
     increaseAllowance(
       spender: PromiseOrValue<string>,
       addedValue: PromiseOrValue<BigNumberish>,
@@ -227,6 +249,11 @@ export interface MockToken extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
+    setFailTransferFrom(
+      _value: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -238,8 +265,8 @@ export interface MockToken extends BaseContract {
     ): Promise<ContractTransaction>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
+      sender: PromiseOrValue<string>,
+      recipient: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -270,6 +297,8 @@ export interface MockToken extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  failTransferFrom(overrides?: CallOverrides): Promise<boolean>;
+
   increaseAllowance(
     spender: PromiseOrValue<string>,
     addedValue: PromiseOrValue<BigNumberish>,
@@ -284,6 +313,11 @@ export interface MockToken extends BaseContract {
 
   name(overrides?: CallOverrides): Promise<string>;
 
+  setFailTransferFrom(
+    _value: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   symbol(overrides?: CallOverrides): Promise<string>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -295,8 +329,8 @@ export interface MockToken extends BaseContract {
   ): Promise<ContractTransaction>;
 
   transferFrom(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
+    sender: PromiseOrValue<string>,
+    recipient: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -327,6 +361,8 @@ export interface MockToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    failTransferFrom(overrides?: CallOverrides): Promise<boolean>;
+
     increaseAllowance(
       spender: PromiseOrValue<string>,
       addedValue: PromiseOrValue<BigNumberish>,
@@ -341,6 +377,11 @@ export interface MockToken extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<string>;
 
+    setFailTransferFrom(
+      _value: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     symbol(overrides?: CallOverrides): Promise<string>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -352,8 +393,8 @@ export interface MockToken extends BaseContract {
     ): Promise<boolean>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
+      sender: PromiseOrValue<string>,
+      recipient: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -409,6 +450,8 @@ export interface MockToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    failTransferFrom(overrides?: CallOverrides): Promise<BigNumber>;
+
     increaseAllowance(
       spender: PromiseOrValue<string>,
       addedValue: PromiseOrValue<BigNumberish>,
@@ -423,6 +466,11 @@ export interface MockToken extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
+    setFailTransferFrom(
+      _value: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -434,8 +482,8 @@ export interface MockToken extends BaseContract {
     ): Promise<BigNumber>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
+      sender: PromiseOrValue<string>,
+      recipient: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -467,6 +515,8 @@ export interface MockToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    failTransferFrom(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     increaseAllowance(
       spender: PromiseOrValue<string>,
       addedValue: PromiseOrValue<BigNumberish>,
@@ -481,6 +531,11 @@ export interface MockToken extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    setFailTransferFrom(
+      _value: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -492,8 +547,8 @@ export interface MockToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
+      sender: PromiseOrValue<string>,
+      recipient: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

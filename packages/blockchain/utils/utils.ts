@@ -13,6 +13,9 @@ import {
   MockToken,
   SideLzAppUpgradable,
 } from "@sideprotocol/contracts-typechain";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { expect } from "chai";
+
 export const ERC20_MINT_AMOUNT = 100000000;
 // stable coins
 const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
@@ -21,6 +24,11 @@ const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 const ETH_USDC = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419";
 
 export const WHALES: string[] = [];
+
+export enum PoolType {
+  IN_CHAIN = 0,
+  INTER_CHAIN = 1,
+}
 
 export const saveDeployedAddress = async (
   sweeper: string,
@@ -197,3 +205,117 @@ export function newAtomicSwapOrderID(
   );
   return id;
 }
+
+export const createDefaultAtomicOrder = async (
+  poolType: PoolType,
+  withNativeToken?: boolean
+) => {
+  const { atomicSwapA, atomicSwapB, chainID, usdc, usdt, bridgeA, bridgeB } =
+    await loadFixture(Utils.prepareTest);
+  const accounts = await ethers.getSigners();
+  const [maker, taker, makerReceiver, takerReceiver] = accounts;
+  const payload = {
+    sellToken: {
+      token: withNativeToken ? ethers.constants.AddressZero : usdc.address,
+      amount: ethers.utils.parseEther("20"),
+    },
+    buyToken: {
+      token: withNativeToken ? ethers.constants.AddressZero : usdt.address,
+      amount: ethers.utils.parseEther("20"),
+    },
+    makerSender: maker.address,
+    makerReceiver: makerReceiver.address,
+    desiredTaker: taker.address,
+    expireAt: 222,
+    dstChainID: chainID,
+    poolType: poolType,
+  };
+  const encoder = new ethers.utils.AbiCoder();
+  const payloadBytes = encoder.encode(
+    [
+      "tuple(address, uint256)",
+      "tuple(address, uint256)",
+      "address",
+      "address",
+      "address",
+      "uint256",
+      "uint16",
+      "uint16",
+    ],
+    [
+      [ethers.constants.AddressZero, 20],
+      [ethers.constants.AddressZero, 20],
+      maker.address,
+      maker.address,
+      taker.address,
+      222,
+      chainID,
+      poolType,
+    ]
+  );
+
+  const estimateFee = await bridgeA.estimateFee(
+    chainID,
+    false,
+    "0x",
+    payloadBytes
+  );
+  if (!withNativeToken) {
+    const amount = await usdc.allowance(
+      accounts[0].address,
+      atomicSwapA.address
+    );
+    await expect(
+      usdc.increaseAllowance(
+        atomicSwapA.address,
+        amount.add(payload.sellToken.amount)
+      )
+    ).not.to.reverted;
+  }
+
+  let nativeTokenAmount = estimateFee.nativeFee.mul(11).div(10);
+  if (withNativeToken) {
+    nativeTokenAmount = nativeTokenAmount.add(payload.sellToken.amount);
+  }
+  await expect(
+    atomicSwapA.makeSwap(payload, {
+      value: nativeTokenAmount,
+    })
+  ).to.emit(atomicSwapA, "AtomicSwapOrderCreated");
+
+  // check token balance.
+  if (!withNativeToken) {
+    const balanceOfUSDC = await usdc.balanceOf(atomicSwapA.address);
+    expect(balanceOfUSDC.toString()).to.equal(payload.sellToken.amount);
+  }
+
+  const id = newAtomicSwapOrderID(accounts[0].address, chainID, chainID, 0);
+  const orderIDAtContractA = await atomicSwapA.swapOrderID(id);
+  expect(orderIDAtContractA.id).to.equal(id);
+
+  if (poolType == PoolType.INTER_CHAIN) {
+    const orderIDAtContractB = await atomicSwapB.swapOrderID(id);
+    expect(orderIDAtContractB.id).to.equal(orderIDAtContractA.id);
+  }
+
+  return {
+    orderID: id,
+    chainID: chainID,
+    maker,
+    makerReceiver,
+    taker,
+    takerReceiver,
+
+    chainA: atomicSwapA,
+    chainB: atomicSwapB,
+    bridgeA,
+    bridgeB,
+    payload: payload,
+    usdt,
+    usdc,
+  };
+};
+
+export const encodePayload = (types: string[], values: any[]): string => {
+  return new ethers.utils.AbiCoder().encode(types, values);
+};

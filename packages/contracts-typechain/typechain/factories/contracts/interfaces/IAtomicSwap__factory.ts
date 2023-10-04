@@ -65,6 +65,19 @@ const _abi = [
         type: "bytes32",
       },
     ],
+    name: "AtomicSwapOrderCanceled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "id",
+        type: "bytes32",
+      },
+    ],
     name: "AtomicSwapOrderCreated",
     type: "event",
   },

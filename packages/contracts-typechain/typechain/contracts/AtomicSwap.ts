@@ -221,6 +221,7 @@ export interface AtomicSwapInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "AtomicSwapOrderCanceled(bytes32)": EventFragment;
     "AtomicSwapOrderCreated(bytes32)": EventFragment;
     "AtomicSwapOrderTook(address,address,bytes32)": EventFragment;
     "Initialized(uint8)": EventFragment;
@@ -228,12 +229,24 @@ export interface AtomicSwapInterface extends utils.Interface {
     "PaymentReceived(address,uint256,uint256,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderTook"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PaymentReceived"): EventFragment;
 }
+
+export interface AtomicSwapOrderCanceledEventObject {
+  id: string;
+}
+export type AtomicSwapOrderCanceledEvent = TypedEvent<
+  [string],
+  AtomicSwapOrderCanceledEventObject
+>;
+
+export type AtomicSwapOrderCanceledEventFilter =
+  TypedEventFilter<AtomicSwapOrderCanceledEvent>;
 
 export interface AtomicSwapOrderCreatedEventObject {
   id: string;
@@ -590,6 +603,13 @@ export interface AtomicSwap extends BaseContract {
   };
 
   filters: {
+    "AtomicSwapOrderCanceled(bytes32)"(
+      id?: PromiseOrValue<BytesLike> | null
+    ): AtomicSwapOrderCanceledEventFilter;
+    AtomicSwapOrderCanceled(
+      id?: PromiseOrValue<BytesLike> | null
+    ): AtomicSwapOrderCanceledEventFilter;
+
     "AtomicSwapOrderCreated(bytes32)"(
       id?: PromiseOrValue<BytesLike> | null
     ): AtomicSwapOrderCreatedEventFilter;

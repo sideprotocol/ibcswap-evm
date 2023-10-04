@@ -222,6 +222,7 @@ export interface AtomicSwapV2Interface extends utils.Interface {
 
   events: {
     "ASSERT(string)": EventFragment;
+    "AtomicSwapOrderCanceled(bytes32)": EventFragment;
     "AtomicSwapOrderCreated(bytes32)": EventFragment;
     "AtomicSwapOrderTook(address,address,bytes32)": EventFragment;
     "Initialized(uint8)": EventFragment;
@@ -230,6 +231,7 @@ export interface AtomicSwapV2Interface extends utils.Interface {
   };
 
   getEvent(nameOrSignatureOrTopic: "ASSERT"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AtomicSwapOrderTook"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
@@ -243,6 +245,17 @@ export interface ASSERTEventObject {
 export type ASSERTEvent = TypedEvent<[string], ASSERTEventObject>;
 
 export type ASSERTEventFilter = TypedEventFilter<ASSERTEvent>;
+
+export interface AtomicSwapOrderCanceledEventObject {
+  id: string;
+}
+export type AtomicSwapOrderCanceledEvent = TypedEvent<
+  [string],
+  AtomicSwapOrderCanceledEventObject
+>;
+
+export type AtomicSwapOrderCanceledEventFilter =
+  TypedEventFilter<AtomicSwapOrderCanceledEvent>;
 
 export interface AtomicSwapOrderCreatedEventObject {
   id: string;
@@ -601,6 +614,13 @@ export interface AtomicSwapV2 extends BaseContract {
   filters: {
     "ASSERT(string)"(msg?: null): ASSERTEventFilter;
     ASSERT(msg?: null): ASSERTEventFilter;
+
+    "AtomicSwapOrderCanceled(bytes32)"(
+      id?: PromiseOrValue<BytesLike> | null
+    ): AtomicSwapOrderCanceledEventFilter;
+    AtomicSwapOrderCanceled(
+      id?: PromiseOrValue<BytesLike> | null
+    ): AtomicSwapOrderCanceledEventFilter;
 
     "AtomicSwapOrderCreated(bytes32)"(
       id?: PromiseOrValue<BytesLike> | null

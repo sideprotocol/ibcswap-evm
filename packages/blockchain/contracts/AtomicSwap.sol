@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
-
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/IAtomicSwap.sol";
 import "./lzApp/NonblockingLzAppUpgradeable.sol";
 import "hardhat/console.sol";
 import "./interfaces/ISideLzAppUpgradable.sol";
 
-contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
+contract AtomicSwap is
+    OwnableUpgradeable,
+    IAtomicSwap,
+    ReentrancyGuardUpgradeable
+{
     ISideLzAppUpgradable public bridge;
 
     mapping(bytes32 => AtomicSwapID) public swapOrderID;
@@ -44,38 +48,42 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
     /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
     function makeSwap(MakeSwapMsg calldata makeswap) external payable virtual {
         // Validate msg basically
-        if (makeswap.sellToken.token == makeswap.buyToken.token) {
-            revert InvalidTokenPair();
-        }
         if (
-            makeswap.sellToken.token == address(0) ||
-            makeswap.buyToken.token == address(0)
+            makeswap.sellToken.token != address(0) &&
+            makeswap.sellToken.token == makeswap.buyToken.token
         ) {
-            revert ZeroTokenAddress();
+            revert InvalidTokenPair();
         }
 
         if (makeswap.makerSender != msg.sender) {
             revert NotOwnerOfToken();
         }
-
+        uint nativeFee = msg.value;
         // Lock token to smart contract.
-        IERC20 sellToken = IERC20(makeswap.sellToken.token);
-
-        if (
-            sellToken.allowance(msg.sender, address(this)) <
-            makeswap.sellToken.amount
-        ) {
-            revert NotAllowedAmount();
-        }
-
-        require(
-            sellToken.transferFrom(
-                msg.sender,
-                address(this),
+        if (makeswap.sellToken.token == address(0)) {
+            require(
+                msg.value > makeswap.sellToken.amount,
+                "Ether amount must be greater than sell token amount"
+            );
+            nativeFee = nativeFee - makeswap.sellToken.amount;
+        } else {
+            IERC20 sellToken = IERC20(makeswap.sellToken.token);
+            if (
+                sellToken.allowance(msg.sender, address(this)) <
                 makeswap.sellToken.amount
-            ),
-            "Failed in Lock token"
-        );
+            ) {
+                revert NotAllowedAmount();
+            }
+
+            require(
+                sellToken.transferFrom(
+                    msg.sender,
+                    address(this),
+                    makeswap.sellToken.amount
+                ),
+                "Failed in Lock token"
+            );
+        }
 
         // Generate ID
         bytes32 id = _generateNewAtomicSwapID(msg.sender, makeswap.dstChainID);
@@ -83,8 +91,9 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
         bytes memory payload = abi.encode(0, MsgType.MAKESWAP, id, makeswap);
 
         // Send Interchain message.
+
         if (makeswap.poolType == PoolType.INTERCHAIN) {
-            bridge.sendLzMsg{value: msg.value}(
+            bridge.sendLzMsg{value: nativeFee}(
                 chainID,
                 payable(msg.sender),
                 payload
@@ -97,7 +106,7 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
     /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
     function takeSwap(
         TakeSwapMsg calldata takeswap
-    ) external payable virtual onlyExist(takeswap.orderID) {
+    ) external payable virtual nonReentrant onlyExist(takeswap.orderID) {
         AtomicSwapOperators storage _operators = swapOrderOperators[
             takeswap.orderID
         ];
@@ -108,49 +117,34 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
         require(_operators.taker == msg.sender, "NoPermissionToTake");
         require(_orderStatus.status != Status.COMPLETE, "AlreadyCompleted");
 
-        _orderStatus.status = Status.COMPLETE;
-
-        bytes memory payload = abi.encode(0, MsgType.TAKESWAP, takeswap);
-
-        if (swapOrderID[takeswap.orderID].poolType == PoolType.INTERCHAIN) {
-            bridge.sendLzMsg{value: msg.value}(
-                chainID,
-                payable(msg.sender),
-                payload
-            );
-            return;
-        }
-
-        Coin storage _buyCoin = swapOrderBuyToken[takeswap.orderID];
-
-        IERC20 _buyToken = IERC20(_buyCoin.token);
-        if (_buyToken.allowance(msg.sender, address(this)) < _buyCoin.amount) {
-            revert NotAllowedAmount();
-        }
-
-        require(
-            _buyToken.transferFrom(
-                msg.sender,
-                _operators.makerReceiver,
-                _buyCoin.amount
-            ),
-            "Failed in token transfer"
-        );
-
-        if (swapOrderID[takeswap.orderID].poolType == PoolType.INTERCHAIN) {
-            bridge.sendLzMsg{value: msg.value}(
-                chainID,
-                payable(msg.sender),
-                payload
-            );
+        Coin storage _buyToken = swapOrderBuyToken[takeswap.orderID];
+        uint nativeFee = msg.value;
+        if (_buyToken.token == address(0)) {
+            require(msg.value > _buyToken.amount, "Not enough funds to buy");
+            payable(_operators.makerReceiver).transfer(_buyToken.amount);
+            nativeFee = msg.value - _buyToken.amount;
         } else {
-            Coin storage _sellCoin = swapOrderSellToken[takeswap.orderID];
-            IERC20 _sellToken = IERC20(_sellCoin.token);
+            IERC20 _token = IERC20(_buyToken.token);
             require(
-                _sellToken.transfer(_operators.takerReceiver, _sellCoin.amount),
+                _token.transferFrom(
+                    msg.sender,
+                    _operators.makerReceiver,
+                    _buyToken.amount
+                ),
                 "Failed in token transfer"
             );
         }
+
+        if (swapOrderID[takeswap.orderID].poolType == PoolType.INTERCHAIN) {
+            bytes memory payload = abi.encode(0, MsgType.TAKESWAP, takeswap);
+
+            bridge.sendLzMsg{value: nativeFee}(
+                chainID,
+                payable(msg.sender),
+                payload
+            );
+        }
+        _orderStatus.status = Status.COMPLETE;
 
         emit AtomicSwapOrderTook(
             _operators.maker,
@@ -159,28 +153,39 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
         );
     }
 
-    // /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
+    /// @dev will updated with EIP 1193 later to improve user redability about tx msg.
     function cancelSwap(
         CancelSwapMsg calldata cancelswap
-    ) external payable virtual onlyExist(cancelswap.orderID) {
-        AtomicSwapOperators memory _operators = swapOrderOperators[
-            cancelswap.orderID
-        ];
+    ) external payable virtual nonReentrant onlyExist(cancelswap.orderID) {
+        bytes32 id = cancelswap.orderID;
+        AtomicSwapOperators memory _operators = swapOrderOperators[id];
         if (_operators.maker != msg.sender) {
             revert NoPermissionToCancel();
         }
 
-        swapOrderStatus[cancelswap.orderID].status = Status.CANCEL;
-        bytes memory payload = abi.encode(
-            0,
-            MsgType.CANCELSWAP,
-            cancelswap.orderID
-        );
-        bridge.sendLzMsg{value: msg.value}(
-            chainID,
-            payable(msg.sender),
-            payload
-        );
+        swapOrderStatus[id].status = Status.CANCEL;
+        bytes memory payload = abi.encode(0, MsgType.CANCELSWAP, id);
+
+        if (swapOrderID[id].poolType == PoolType.INTERCHAIN) {
+            _removeAtomicSwapOrder(id);
+            bridge.sendLzMsg{value: msg.value}(
+                chainID,
+                payable(msg.sender),
+                payload
+            );
+        }
+
+        // unlock token
+        uint256 amount = swapOrderBuyToken[id].amount;
+        if (swapOrderSellToken[id].token == address(0)) {
+            payable(msg.sender).transfer(amount);
+        } else {
+            IERC20 sellToken = IERC20(swapOrderSellToken[id].token);
+            _removeAtomicSwapOrder(id);
+            sellToken.transfer(msg.sender, amount);
+        }
+
+        emit AtomicSwapOrderCanceled(id);
     }
 
     function onReceivePacket(
@@ -211,7 +216,7 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
             swapOrderStatus[takeswap.orderID].status = Status.COMPLETE;
         } else if (msgType == MsgType.CANCELSWAP) {
             bytes32 id = bytes32(_payload[32:]);
-            swapOrderStatus[id].status = Status.CANCEL;
+            _removeAtomicSwapOrder(id);
         }
     }
 
@@ -264,6 +269,7 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
             _orderID.srcChainID = chainID;
             _orderID.dstChainID = _srcChainID;
             swapOrderOperators[id].taker = _operators.taker;
+            swapOrderOperators[id].makerReceiver = _operators.makerReceiver;
         } else {
             swapOrderOperators[id] = _operators;
             swapOrderSellToken[id] = makeswap.sellToken;
@@ -273,6 +279,10 @@ contract AtomicSwap is OwnableUpgradeable, IAtomicSwap {
         swapOrderID[id] = _orderID;
         swapOrderBuyToken[id] = makeswap.buyToken;
         emit AtomicSwapOrderCreated(id);
+    }
+
+    function _removeAtomicSwapOrder(bytes32 id) internal {
+        delete (swapOrderID[id]);
     }
 
     function bytesToAddress(

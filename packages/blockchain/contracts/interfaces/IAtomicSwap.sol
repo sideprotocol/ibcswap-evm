@@ -49,14 +49,6 @@ interface IAtomicSwap {
         address makerReceiver;
         address takerReceiver;
     }
-
-    // struct AtomicSwapSellToken
-
-    // struct AtomicSwapSellTokens {
-    //     Coin sellToken;
-    //     Coin buyToken;
-    // }
-
     struct AtomicSwapStatus {
         Side side;
         Status status;
@@ -102,6 +94,8 @@ interface IAtomicSwap {
         address indexed taker,
         bytes32 indexed id
     );
+
+    event AtomicSwapOrderCanceled(bytes32 indexed id);
 
     // Define errors
     error AlreadyExistPool();
