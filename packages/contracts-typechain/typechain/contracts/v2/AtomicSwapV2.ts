@@ -87,12 +87,15 @@ export declare namespace IAtomicSwap {
 
 export interface AtomicSwapV2Interface extends utils.Interface {
   functions: {
+    "acceptBid(bytes32,address)": FunctionFragment;
+    "bids(bytes32,address)": FunctionFragment;
     "bridge()": FunctionFragment;
     "cancelSwap((bytes32))": FunctionFragment;
     "initialize(address,uint16,address)": FunctionFragment;
     "makeSwap(((address,uint256),(address,uint256),address,address,address,uint256,uint16,uint8))": FunctionFragment;
     "onReceivePacket(uint16,bytes,uint64,bytes)": FunctionFragment;
     "owner()": FunctionFragment;
+    "placeBid(uint256,bytes32,address,uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "swapOrderBuyToken(bytes32)": FunctionFragment;
     "swapOrderID(bytes32)": FunctionFragment;
@@ -105,12 +108,15 @@ export interface AtomicSwapV2Interface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "acceptBid"
+      | "bids"
       | "bridge"
       | "cancelSwap"
       | "initialize"
       | "makeSwap"
       | "onReceivePacket"
       | "owner"
+      | "placeBid"
       | "renounceOwnership"
       | "swapOrderBuyToken"
       | "swapOrderID"
@@ -121,6 +127,14 @@ export interface AtomicSwapV2Interface extends utils.Interface {
       | "transferOwnership"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "acceptBid",
+    values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "bids",
+    values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(functionFragment: "bridge", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "cancelSwap",
@@ -148,6 +162,15 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "placeBid",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -181,6 +204,8 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
 
+  decodeFunctionResult(functionFragment: "acceptBid", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "bids", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "bridge", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "cancelSwap", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
@@ -190,6 +215,7 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "placeBid", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -340,6 +366,28 @@ export interface AtomicSwapV2 extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    acceptBid(
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidder: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    bids(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, string, number, string, string, BigNumber, BigNumber] & {
+        amount: BigNumber;
+        order: string;
+        status: number;
+        bidder: string;
+        bidderReceiver: string;
+        receiveTimestamp: BigNumber;
+        expireTimestamp: BigNumber;
+      }
+    >;
+
     bridge(overrides?: CallOverrides): Promise<[string]>;
 
     cancelSwap(
@@ -368,6 +416,14 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<ContractTransaction>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
+
+    placeBid(
+      _bidAmount: PromiseOrValue<BigNumberish>,
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidderReceiver: PromiseOrValue<string>,
+      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -431,6 +487,28 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  acceptBid(
+    _orderID: PromiseOrValue<BytesLike>,
+    _bidder: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  bids(
+    arg0: PromiseOrValue<BytesLike>,
+    arg1: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, string, number, string, string, BigNumber, BigNumber] & {
+      amount: BigNumber;
+      order: string;
+      status: number;
+      bidder: string;
+      bidderReceiver: string;
+      receiveTimestamp: BigNumber;
+      expireTimestamp: BigNumber;
+    }
+  >;
+
   bridge(overrides?: CallOverrides): Promise<string>;
 
   cancelSwap(
@@ -459,6 +537,14 @@ export interface AtomicSwapV2 extends BaseContract {
   ): Promise<ContractTransaction>;
 
   owner(overrides?: CallOverrides): Promise<string>;
+
+  placeBid(
+    _bidAmount: PromiseOrValue<BigNumberish>,
+    _orderID: PromiseOrValue<BytesLike>,
+    _bidderReceiver: PromiseOrValue<string>,
+    _expireTimestamp: PromiseOrValue<BigNumberish>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -522,6 +608,28 @@ export interface AtomicSwapV2 extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    acceptBid(
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    bids(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, string, number, string, string, BigNumber, BigNumber] & {
+        amount: BigNumber;
+        order: string;
+        status: number;
+        bidder: string;
+        bidderReceiver: string;
+        receiveTimestamp: BigNumber;
+        expireTimestamp: BigNumber;
+      }
+    >;
+
     bridge(overrides?: CallOverrides): Promise<string>;
 
     cancelSwap(
@@ -550,6 +658,14 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<void>;
 
     owner(overrides?: CallOverrides): Promise<string>;
+
+    placeBid(
+      _bidAmount: PromiseOrValue<BigNumberish>,
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidderReceiver: PromiseOrValue<string>,
+      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -667,6 +783,18 @@ export interface AtomicSwapV2 extends BaseContract {
   };
 
   estimateGas: {
+    acceptBid(
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidder: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    bids(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     bridge(overrides?: CallOverrides): Promise<BigNumber>;
 
     cancelSwap(
@@ -695,6 +823,14 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    placeBid(
+      _bidAmount: PromiseOrValue<BigNumberish>,
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidderReceiver: PromiseOrValue<string>,
+      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -737,6 +873,18 @@ export interface AtomicSwapV2 extends BaseContract {
   };
 
   populateTransaction: {
+    acceptBid(
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidder: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    bids(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     bridge(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     cancelSwap(
@@ -765,6 +913,14 @@ export interface AtomicSwapV2 extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    placeBid(
+      _bidAmount: PromiseOrValue<BigNumberish>,
+      _orderID: PromiseOrValue<BytesLike>,
+      _bidderReceiver: PromiseOrValue<string>,
+      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }

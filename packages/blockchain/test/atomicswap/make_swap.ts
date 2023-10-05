@@ -350,6 +350,70 @@ describe("AtomicSwap: MakeSwap", () => {
       ).to.revertedWith("Failed in Lock token");
     });
 
+    it("should revert to create in-chain pool with not enough native token", async () => {
+      const { atomicSwapA, chainID, usdc, bridgeA } = await loadFixture(
+        Utils.prepareTest
+      );
+      const accounts = await ethers.getSigners();
+      const [maker, taker, makerReceiver, takerReceiver] = accounts;
+      const payload = {
+        sellToken: {
+          token: ethers.constants.AddressZero,
+          amount: ethers.utils.parseEther("20"),
+        },
+        buyToken: {
+          token: usdc.address,
+          amount: ethers.utils.parseEther("20"),
+        },
+        makerSender: maker.address,
+        makerReceiver: makerReceiver.address,
+        desiredTaker: taker.address,
+        expireAt: 222,
+        dstChainID: chainID,
+        poolType: PoolType.IN_CHAIN,
+      };
+      const encoder = new ethers.utils.AbiCoder();
+      const payloadBytes = encoder.encode(
+        [
+          "tuple(address, uint256)",
+          "tuple(address, uint256)",
+          "address",
+          "address",
+          "address",
+          "uint256",
+          "uint16",
+          "uint16",
+        ],
+        [
+          [ethers.constants.AddressZero, 20],
+          [ethers.constants.AddressZero, 20],
+          maker.address,
+          maker.address,
+          taker.address,
+          222,
+          chainID,
+          PoolType.IN_CHAIN,
+        ]
+      );
+
+      const estimateFee = await bridgeA.estimateFee(
+        chainID,
+        false,
+        "0x",
+        payloadBytes
+      );
+
+      const amount = await usdc.allowance(
+        accounts[0].address,
+        atomicSwapA.address
+      );
+      await expect(
+        atomicSwapA.makeSwap(payload, {
+          value: estimateFee.nativeFee.mul(11).div(10),
+        })
+      ).to.revertedWith("Not enough ether");
+    });
+
     it("should not run cross chain message when poolType is In-chain", async () => {
       const {
         atomicSwapA,

@@ -22,6 +22,11 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "InvalidBidAmount",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "InvalidTokenPair",
     type: "error",
   },
@@ -48,6 +53,11 @@ const _abi = [
   {
     inputs: [],
     name: "NotOwnerOfToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TokenTransferFailed",
     type: "error",
   },
   {

@@ -20,6 +20,10 @@ contract AtomicSwap is
     mapping(bytes32 => Coin) public swapOrderSellToken;
     mapping(bytes32 => Coin) public swapOrderBuyToken;
 
+    // Bid
+    // Primary mapping using BidKey (order + bidder)
+    mapping(bytes32 => mapping(address => Bid)) public bids;
+
     uint256 swapOrderCounter;
     uint16 chainID;
 
@@ -61,10 +65,7 @@ contract AtomicSwap is
         uint nativeFee = msg.value;
         // Lock token to smart contract.
         if (makeswap.sellToken.token == address(0)) {
-            require(
-                msg.value > makeswap.sellToken.amount,
-                "Ether amount must be greater than sell token amount"
-            );
+            require(msg.value > makeswap.sellToken.amount, "Not enough ether");
             nativeFee = nativeFee - makeswap.sellToken.amount;
         } else {
             IERC20 sellToken = IERC20(makeswap.sellToken.token);
@@ -88,11 +89,16 @@ contract AtomicSwap is
         // Generate ID
         bytes32 id = _generateNewAtomicSwapID(msg.sender, makeswap.dstChainID);
         _addNewSwapOrder(id, msg.sender, makeswap, Side.NATIVE, 0x0);
-        bytes memory payload = abi.encode(0, MsgType.MAKESWAP, id, makeswap);
 
         // Send Interchain message.
-
         if (makeswap.poolType == PoolType.INTERCHAIN) {
+            bytes memory payload = abi.encode(
+                0,
+                MsgType.MAKESWAP,
+                id,
+                makeswap
+            );
+
             bridge.sendLzMsg{value: nativeFee}(
                 chainID,
                 payable(msg.sender),
@@ -137,7 +143,6 @@ contract AtomicSwap is
 
         if (swapOrderID[takeswap.orderID].poolType == PoolType.INTERCHAIN) {
             bytes memory payload = abi.encode(0, MsgType.TAKESWAP, takeswap);
-
             bridge.sendLzMsg{value: nativeFee}(
                 chainID,
                 payable(msg.sender),
@@ -145,6 +150,7 @@ contract AtomicSwap is
             );
         }
         _orderStatus.status = Status.COMPLETE;
+        _orderStatus.completedAt = block.timestamp;
 
         emit AtomicSwapOrderTook(
             _operators.maker,
@@ -164,16 +170,6 @@ contract AtomicSwap is
         }
 
         swapOrderStatus[id].status = Status.CANCEL;
-        bytes memory payload = abi.encode(0, MsgType.CANCELSWAP, id);
-
-        if (swapOrderID[id].poolType == PoolType.INTERCHAIN) {
-            _removeAtomicSwapOrder(id);
-            bridge.sendLzMsg{value: msg.value}(
-                chainID,
-                payable(msg.sender),
-                payload
-            );
-        }
 
         // unlock token
         uint256 amount = swapOrderBuyToken[id].amount;
@@ -181,10 +177,18 @@ contract AtomicSwap is
             payable(msg.sender).transfer(amount);
         } else {
             IERC20 sellToken = IERC20(swapOrderSellToken[id].token);
-            _removeAtomicSwapOrder(id);
             sellToken.transfer(msg.sender, amount);
         }
 
+        if (swapOrderID[id].poolType == PoolType.INTERCHAIN) {
+            bytes memory payload = abi.encode(0, MsgType.CANCELSWAP, id);
+            bridge.sendLzMsg{value: msg.value}(
+                chainID,
+                payable(msg.sender),
+                payload
+            );
+        }
+        _removeAtomicSwapOrder(id);
         emit AtomicSwapOrderCanceled(id);
     }
 
@@ -242,7 +246,6 @@ contract AtomicSwap is
         if (swapOrderID[id].id != bytes32(0x0)) {
             revert AlreadyExistPool();
         }
-
         AtomicSwapID memory _orderID = AtomicSwapID(
             id,
             chainID,
@@ -291,5 +294,102 @@ contract AtomicSwap is
         assembly {
             addr := mload(add(bys, 20))
         }
+    }
+
+    // Bid have to run only taker chain.
+    function placeBid(
+        uint256 _bidAmount,
+        bytes32 _orderID,
+        address _bidderReceiver,
+        uint256 _expireTimestamp
+    ) external payable nonReentrant onlyExist(_orderID) {
+        Coin storage _buyToken = swapOrderBuyToken[_orderID];
+        PoolType _poolType = swapOrderID[_orderID].poolType;
+        Bid storage _bid = bids[_orderID][msg.sender];
+        if (_bidAmount < _bid.amount) {
+            revert InvalidBidAmount();
+        }
+
+        // Move token from user to account
+        uint256 tokenAmount = _bidAmount - _bid.amount;
+        _safeTransferFrom(
+            _buyToken.token,
+            msg.sender,
+            address(this),
+            tokenAmount
+        );
+
+        // Populate the primary bids mapping
+        Bid memory newBid = Bid({
+            amount: _bidAmount,
+            order: _orderID,
+            status: BidStatus.Placed,
+            bidder: msg.sender,
+            bidderReceiver: _bidderReceiver,
+            receiveTimestamp: block.timestamp,
+            expireTimestamp: _expireTimestamp
+        });
+        bids[_orderID][msg.sender] = newBid;
+
+        if (_poolType == PoolType.INTERCHAIN) {
+            bytes memory payload = abi.encode(0, MsgType.PLACEBID, newBid);
+            bridge.sendLzMsg{value: msg.value}(
+                chainID,
+                payable(msg.sender),
+                payload
+            );
+        }
+    }
+
+    function acceptBid(
+        bytes32 _orderID,
+        address _bidder
+    ) external nonReentrant onlyExist(_orderID) {
+        require(
+            swapOrderOperators[_orderID].maker == msg.sender,
+            "Not the owner of the order"
+        );
+        Bid storage selectedBid = bids[_orderID][_bidder];
+        require(
+            selectedBid.status == BidStatus.Placed,
+            "Bid is not in Placed status"
+        );
+
+        // Update the bid status
+        selectedBid.status = BidStatus.Executed;
+
+        // Transfer tokens to the order owner
+        Coin storage _buyToken = swapOrderBuyToken[_orderID];
+        _safeTransfer(_buyToken.token, msg.sender, selectedBid.amount);
+
+        PoolType _poolType = swapOrderID[_orderID].poolType;
+        if (_poolType == PoolType.INTERCHAIN) {
+            bytes memory payload = abi.encode(0, MsgType.ACCEPBID, selectedBid);
+            bridge.sendLzMsg(chainID, payable(msg.sender), payload);
+        }
+    }
+
+    function _safeTransferFrom(
+        address token,
+        address from,
+        address to,
+        uint256 amount
+    ) internal {
+        IERC20 _token = IERC20(token);
+        if (_token.allowance(msg.sender, address(this)) < amount) {
+            revert NotAllowedAmount();
+        }
+        require(
+            _token.transferFrom(from, to, amount),
+            "Failed to transfer from"
+        );
+    }
+
+    function _safeTransfer(address token, address to, uint256 amount) internal {
+        IERC20 _token = IERC20(token);
+        if (_token.allowance(msg.sender, address(this)) < amount) {
+            revert NotAllowedAmount();
+        }
+        require(_token.transfer(to, amount), "Failed to transfer from");
     }
 }

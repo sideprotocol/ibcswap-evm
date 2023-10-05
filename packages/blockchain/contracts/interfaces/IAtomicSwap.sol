@@ -12,7 +12,9 @@ interface IAtomicSwap {
     enum MsgType {
         MAKESWAP,
         TAKESWAP,
-        CANCELSWAP
+        CANCELSWAP,
+        PLACEBID,
+        ACCEPBID
     }
     enum Side {
         REMOTE,
@@ -57,8 +59,22 @@ interface IAtomicSwap {
         uint256 completedAt;
     }
 
-    struct AtomicSwapBid {
-        Coin bid;
+    enum BidStatus {
+        Initial,
+        Failed,
+        Cancelled,
+        Executed,
+        Placed
+    }
+
+    struct Bid {
+        uint256 amount;
+        bytes32 order;
+        BidStatus status;
+        address bidder;
+        address bidderReceiver;
+        uint256 receiveTimestamp;
+        uint256 expireTimestamp;
     }
 
     struct MakeSwapMsg {
@@ -115,4 +131,8 @@ interface IAtomicSwap {
     error ZeroTokenAddress();
 
     error NotOwnerOfToken();
+
+    error InvalidBidAmount();
+
+    error TokenTransferFailed();
 }
