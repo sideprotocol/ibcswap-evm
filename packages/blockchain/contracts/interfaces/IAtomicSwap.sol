@@ -14,7 +14,7 @@ interface IAtomicSwap {
         TAKESWAP,
         CANCELSWAP,
         PLACEBID,
-        ACCEPBID
+        ACCEPTBID
     }
     enum Side {
         REMOTE,
@@ -91,6 +91,13 @@ interface IAtomicSwap {
     struct TakeSwapMsg {
         bytes32 orderID;
         address takerReceiver;
+    }
+
+    struct PlaceBidMsg {
+        uint256 bidAmount;
+        bytes32 orderID;
+        address bidderReceiver;
+        uint256 expireTimestamp;
     }
 
     struct CancelSwapMsg {

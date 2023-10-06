@@ -16,8 +16,16 @@ describe("TakeSwap", () => {
     poolType: PoolType,
     withNativeToken?: boolean
   ) => {
-    const { orderID, chainID, chainA, chainB, taker, usdt, bridgeA, bridgeB } =
-      await createDefaultAtomicOrder(poolType, withNativeToken);
+    const {
+      orderID,
+      chainID,
+      atomicSwapA,
+      atomicSwapB,
+      taker,
+      usdt,
+      bridgeA,
+      bridgeB,
+    } = await createDefaultAtomicOrder(poolType, withNativeToken);
 
     const payloadBytes = encodePayload(
       ["bytes32", "address", "address"],
@@ -25,7 +33,8 @@ describe("TakeSwap", () => {
     );
 
     const bridge = poolType === PoolType.IN_CHAIN ? bridgeA : bridgeB;
-    const atomicSwap = poolType === PoolType.IN_CHAIN ? chainA : chainB;
+    const atomicSwap =
+      poolType === PoolType.IN_CHAIN ? atomicSwapA : atomicSwapB;
     const estimateFee = await bridge.estimateFee(
       chainID,
       false,
@@ -58,7 +67,7 @@ describe("TakeSwap", () => {
 
     expect((await atomicSwap.swapOrderStatus(orderID)).status).to.equal(4);
     if (poolType === PoolType.INTER_CHAIN) {
-      expect((await chainB.swapOrderStatus(orderID)).status).to.equal(4);
+      expect((await atomicSwapB.swapOrderStatus(orderID)).status).to.equal(4);
     }
     return {
       orderID,
@@ -75,7 +84,7 @@ describe("TakeSwap", () => {
     testTakeSwap(PoolType.INTER_CHAIN));
 
   it("should fail when trying to take a non-existent swap", async () => {
-    const { orderID, chainID, chainA, chainB, taker, usdt, bridgeA, bridgeB } =
+    const { orderID, chainID, atomicSwapA, atomicSwapB, taker, usdt, bridgeA, bridgeB } =
       await createDefaultAtomicOrder(PoolType.IN_CHAIN, true);
     const payloadBytes = encodePayload(
       ["bytes32", "address", "address"],
@@ -83,15 +92,15 @@ describe("TakeSwap", () => {
     );
 
     await expect(
-      chainA.connect(taker).takeSwap({
+      atomicSwapA.connect(taker).takeSwap({
         orderID: ethers.utils.randomBytes(32), // Some random orderID
         takerReceiver: accounts[1].address,
       })
-    ).to.be.revertedWithCustomError(chainA, "NonExistPool");
+    ).to.be.revertedWithCustomError(atomicSwapB, "NonExistPool");
   });
 
   it("should fail when trying to take with insufficient Ether", async () => {
-    const { orderID, chainID, chainA, taker, bridgeA } =
+    const { orderID, chainID, atomicSwapA, taker, bridgeA } =
       await createDefaultAtomicOrder(PoolType.IN_CHAIN, true);
 
     const payloadBytes = encodePayload(
@@ -100,7 +109,7 @@ describe("TakeSwap", () => {
     );
 
     const bridge = bridgeA;
-    const atomicSwap = chainA;
+    const atomicSwap = atomicSwapA;
     const estimateFee = await bridge.estimateFee(
       chainID,
       false,
@@ -123,7 +132,7 @@ describe("TakeSwap", () => {
   });
 
   it("should fail when trying to take with insufficient ERC20 allowance", async () => {
-    const { orderID, chainID, chainA, chainB, taker, usdt, bridgeA, bridgeB } =
+    const { orderID, chainID, atomicSwapA, atomicSwapB, taker, usdt, bridgeA, bridgeB } =
       await createDefaultAtomicOrder(PoolType.IN_CHAIN);
 
     const payloadBytes = encodePayload(
@@ -132,7 +141,7 @@ describe("TakeSwap", () => {
     );
 
     const bridge = bridgeA;
-    const atomicSwap = chainA;
+    const atomicSwap = atomicSwapA;
     const estimateFee = await bridge.estimateFee(
       chainID,
       false,
@@ -169,13 +178,13 @@ describe("TakeSwap", () => {
   });
 
   it("should fail when a non-taker tries to take the swap", async () => {
-    const { orderID, chainA } = await createDefaultAtomicOrder(
+    const { orderID, atomicSwapA } = await createDefaultAtomicOrder(
       PoolType.IN_CHAIN,
       true
     );
 
     await expect(
-      chainA.connect(accounts[2]).takeSwap({
+      atomicSwapA.connect(accounts[2]).takeSwap({
         orderID,
         takerReceiver: accounts[1].address,
       })

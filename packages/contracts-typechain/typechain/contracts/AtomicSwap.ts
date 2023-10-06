@@ -74,6 +74,25 @@ export declare namespace IAtomicSwap {
     poolType: number;
   };
 
+  export type PlaceBidMsgStruct = {
+    bidAmount: PromiseOrValue<BigNumberish>;
+    orderID: PromiseOrValue<BytesLike>;
+    bidderReceiver: PromiseOrValue<string>;
+    expireTimestamp: PromiseOrValue<BigNumberish>;
+  };
+
+  export type PlaceBidMsgStructOutput = [
+    BigNumber,
+    string,
+    string,
+    BigNumber
+  ] & {
+    bidAmount: BigNumber;
+    orderID: string;
+    bidderReceiver: string;
+    expireTimestamp: BigNumber;
+  };
+
   export type TakeSwapMsgStruct = {
     orderID: PromiseOrValue<BytesLike>;
     takerReceiver: PromiseOrValue<string>;
@@ -95,7 +114,7 @@ export interface AtomicSwapInterface extends utils.Interface {
     "makeSwap(((address,uint256),(address,uint256),address,address,address,uint256,uint16,uint8))": FunctionFragment;
     "onReceivePacket(uint16,bytes,uint64,bytes)": FunctionFragment;
     "owner()": FunctionFragment;
-    "placeBid(uint256,bytes32,address,uint256)": FunctionFragment;
+    "placeBid((uint256,bytes32,address,uint256))": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "swapOrderBuyToken(bytes32)": FunctionFragment;
     "swapOrderID(bytes32)": FunctionFragment;
@@ -164,12 +183,7 @@ export interface AtomicSwapInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "placeBid",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [IAtomicSwap.PlaceBidMsgStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -409,10 +423,7 @@ export interface AtomicSwap extends BaseContract {
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     placeBid(
-      _bidAmount: PromiseOrValue<BigNumberish>,
-      _orderID: PromiseOrValue<BytesLike>,
-      _bidderReceiver: PromiseOrValue<string>,
-      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      placeBidMsg: IAtomicSwap.PlaceBidMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -530,10 +541,7 @@ export interface AtomicSwap extends BaseContract {
   owner(overrides?: CallOverrides): Promise<string>;
 
   placeBid(
-    _bidAmount: PromiseOrValue<BigNumberish>,
-    _orderID: PromiseOrValue<BytesLike>,
-    _bidderReceiver: PromiseOrValue<string>,
-    _expireTimestamp: PromiseOrValue<BigNumberish>,
+    placeBidMsg: IAtomicSwap.PlaceBidMsgStruct,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -651,10 +659,7 @@ export interface AtomicSwap extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     placeBid(
-      _bidAmount: PromiseOrValue<BigNumberish>,
-      _orderID: PromiseOrValue<BytesLike>,
-      _bidderReceiver: PromiseOrValue<string>,
-      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      placeBidMsg: IAtomicSwap.PlaceBidMsgStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -813,10 +818,7 @@ export interface AtomicSwap extends BaseContract {
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     placeBid(
-      _bidAmount: PromiseOrValue<BigNumberish>,
-      _orderID: PromiseOrValue<BytesLike>,
-      _bidderReceiver: PromiseOrValue<string>,
-      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      placeBidMsg: IAtomicSwap.PlaceBidMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -903,10 +905,7 @@ export interface AtomicSwap extends BaseContract {
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     placeBid(
-      _bidAmount: PromiseOrValue<BigNumberish>,
-      _orderID: PromiseOrValue<BytesLike>,
-      _bidderReceiver: PromiseOrValue<string>,
-      _expireTimestamp: PromiseOrValue<BigNumberish>,
+      placeBidMsg: IAtomicSwap.PlaceBidMsgStruct,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

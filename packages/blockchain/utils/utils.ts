@@ -208,7 +208,8 @@ export function newAtomicSwapOrderID(
 
 export const createDefaultAtomicOrder = async (
   poolType: PoolType,
-  withNativeToken?: boolean
+  withNativeToken?: boolean,
+  noTaker?:boolean
 ) => {
   const { atomicSwapA, atomicSwapB, chainID, usdc, usdt, bridgeA, bridgeB } =
     await loadFixture(Utils.prepareTest);
@@ -225,7 +226,7 @@ export const createDefaultAtomicOrder = async (
     },
     makerSender: maker.address,
     makerReceiver: makerReceiver.address,
-    desiredTaker: taker.address,
+    desiredTaker: noTaker ? ethers.constants.AddressZero :taker.address,
     expireAt: 222,
     dstChainID: chainID,
     poolType: poolType,
@@ -306,8 +307,8 @@ export const createDefaultAtomicOrder = async (
     taker,
     takerReceiver,
 
-    chainA: atomicSwapA,
-    chainB: atomicSwapB,
+    atomicSwapA,
+    atomicSwapB,
     bridgeA,
     bridgeB,
     payload: payload,

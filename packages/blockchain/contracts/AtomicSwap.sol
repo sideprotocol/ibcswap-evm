@@ -298,26 +298,33 @@ contract AtomicSwap is
 
     // Bid have to run only taker chain.
     function placeBid(
-        uint256 _bidAmount,
-        bytes32 _orderID,
-        address _bidderReceiver,
-        uint256 _expireTimestamp
-    ) external payable nonReentrant onlyExist(_orderID) {
+        PlaceBidMsg calldata placeBidMsg
+    ) external payable nonReentrant onlyExist(placeBidMsg.orderID) {
+        bytes32 _orderID = placeBidMsg.orderID;
+        uint256 _bidAmount = placeBidMsg.bidAmount;
+        address _bidderReceiver = placeBidMsg.bidderReceiver;
+        uint256 _expireTimestamp = placeBidMsg.expireTimestamp;
+
         Coin storage _buyToken = swapOrderBuyToken[_orderID];
         PoolType _poolType = swapOrderID[_orderID].poolType;
         Bid storage _bid = bids[_orderID][msg.sender];
         if (_bidAmount < _bid.amount) {
             revert InvalidBidAmount();
         }
-
         // Move token from user to account
         uint256 tokenAmount = _bidAmount - _bid.amount;
-        _safeTransferFrom(
-            _buyToken.token,
-            msg.sender,
-            address(this),
-            tokenAmount
-        );
+
+        if (_buyToken.token != address(0)) {
+            console.log("tokenAmount:", tokenAmount);
+            _safeTransferFrom(
+                _buyToken.token,
+                msg.sender,
+                address(this),
+                tokenAmount
+            );
+        } else {
+            require(msg.value > tokenAmount, "Not enough fund to bid");
+        }
 
         // Populate the primary bids mapping
         Bid memory newBid = Bid({
@@ -364,7 +371,11 @@ contract AtomicSwap is
 
         PoolType _poolType = swapOrderID[_orderID].poolType;
         if (_poolType == PoolType.INTERCHAIN) {
-            bytes memory payload = abi.encode(0, MsgType.ACCEPBID, selectedBid);
+            bytes memory payload = abi.encode(
+                0,
+                MsgType.ACCEPTBID,
+                selectedBid
+            );
             bridge.sendLzMsg(chainID, payable(msg.sender), payload);
         }
     }
