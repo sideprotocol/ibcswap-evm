@@ -190,6 +190,7 @@ export function generateRandomString(length: number) {
 }
 
 import { keccak256 } from "ethers/lib/utils";
+import { BlockTime } from "./time";
 
 export function newAtomicSwapOrderID(
   sender: string,
@@ -209,7 +210,7 @@ export function newAtomicSwapOrderID(
 export const createDefaultAtomicOrder = async (
   poolType: PoolType,
   withNativeToken?: boolean,
-  noTaker?:boolean
+  noTaker?: boolean
 ) => {
   const { atomicSwapA, atomicSwapB, chainID, usdc, usdt, bridgeA, bridgeB } =
     await loadFixture(Utils.prepareTest);
@@ -226,7 +227,7 @@ export const createDefaultAtomicOrder = async (
     },
     makerSender: maker.address,
     makerReceiver: makerReceiver.address,
-    desiredTaker: noTaker ? ethers.constants.AddressZero :taker.address,
+    desiredTaker: noTaker ? ethers.constants.AddressZero : taker.address,
     expireAt: 222,
     dstChainID: chainID,
     poolType: poolType,
@@ -315,6 +316,116 @@ export const createDefaultAtomicOrder = async (
     usdt,
     usdc,
   };
+};
+
+export const bidToDefaultAtomicOrder = async (
+  poolType: PoolType,
+  withNativeToken?: boolean,
+  noTaker?: boolean
+) => {
+  const orderParams = await createDefaultAtomicOrder(
+    poolType,
+    withNativeToken,
+    noTaker
+  );
+  const {
+    atomicSwapA,
+    atomicSwapB,
+    maker,
+    taker,
+    orderID,
+    chainID,
+    usdc,
+    usdt,
+    bridgeA,
+    bridgeB,
+  } = orderParams;
+  // // try to take swap
+  const bridge = poolType == PoolType.INTER_CHAIN ? bridgeB : bridgeA;
+  const atomicSwap =
+    poolType == PoolType.INTER_CHAIN ? atomicSwapB : atomicSwapA;
+  const payloadBytes = encodePayload(
+    ["bytes32", "address", "address"],
+    [orderID, taker.address, taker.address]
+  );
+
+  const estimateFee = await bridge.estimateFee(
+    chainID,
+    false,
+    "0x",
+    payloadBytes
+  );
+
+  const buyToken = await atomicSwap.swapOrderBuyToken(orderID);
+  let nativeTokenAmount = estimateFee.nativeFee.mul(11).div(10);
+  if (withNativeToken) {
+    nativeTokenAmount = nativeTokenAmount.add(buyToken.amount);
+  } else {
+    await usdt.connect(taker).approve(atomicSwap.address, buyToken.amount);
+  }
+
+  await expect(
+    atomicSwap.connect(taker).takeSwap(
+      {
+        orderID,
+        takerReceiver: maker.address,
+      },
+      {
+        value: nativeTokenAmount,
+      }
+    )
+  ).to.revertedWith("NoPermissionToTake");
+
+  const bidPayload = {
+    bidder: taker.address,
+    bidAmount: buyToken.amount,
+    orderID: orderID,
+    bidderReceiver: taker.address,
+    expireTimestamp: await BlockTime.AfterSeconds(30),
+  };
+
+  const bidPayloadBytes = encodePayload(
+    ["address", "uint256", "bytes32", "address", "uint256"],
+    [
+      taker.address,
+      bidPayload.bidAmount,
+      bidPayload.orderID,
+      bidPayload.bidderReceiver,
+      bidPayload.expireTimestamp,
+    ]
+  );
+  const estimateBidFee = await bridge.estimateFee(
+    chainID,
+    false,
+    "0x",
+    bidPayloadBytes
+  );
+
+  let txAmount = estimateBidFee.nativeFee.mul(11).div(10).add(buyToken.amount);
+  if (poolType == PoolType.IN_CHAIN) {
+    txAmount = buyToken.amount;
+  }
+  // make bid
+
+  if (withNativeToken) {
+    await expect(
+      atomicSwap.connect(taker).placeBid(bidPayload, {
+        value: txAmount,
+      })
+    ).to.changeEtherBalance(atomicSwap.address, buyToken.amount);
+  } else {
+    await expect(
+      atomicSwap.connect(taker).placeBid(bidPayload, {
+        value: txAmount,
+      })
+    ).to.changeTokenBalance(usdt, atomicSwap.address, buyToken.amount);
+  }
+  if (poolType == PoolType.INTER_CHAIN) {
+    const bidAtA = await atomicSwapA.bids(orderID, taker.address);
+    const bidAtB = await atomicSwapB.bids(orderID, taker.address);
+    expect(bidAtA).to.deep.equal(bidAtB);
+  }
+  return { ...orderParams, ...bidPayload };
 };
 
 export const encodePayload = (types: string[], values: any[]): string => {

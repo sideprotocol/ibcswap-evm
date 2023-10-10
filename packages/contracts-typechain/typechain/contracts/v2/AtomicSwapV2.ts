@@ -75,6 +75,7 @@ export declare namespace IAtomicSwap {
   };
 
   export type PlaceBidMsgStruct = {
+    bidder: PromiseOrValue<string>;
     bidAmount: PromiseOrValue<BigNumberish>;
     orderID: PromiseOrValue<BytesLike>;
     bidderReceiver: PromiseOrValue<string>;
@@ -82,11 +83,13 @@ export declare namespace IAtomicSwap {
   };
 
   export type PlaceBidMsgStructOutput = [
+    string,
     BigNumber,
     string,
     string,
     BigNumber
   ] & {
+    bidder: string;
     bidAmount: BigNumber;
     orderID: string;
     bidderReceiver: string;
@@ -114,7 +117,7 @@ export interface AtomicSwapV2Interface extends utils.Interface {
     "makeSwap(((address,uint256),(address,uint256),address,address,address,uint256,uint16,uint8))": FunctionFragment;
     "onReceivePacket(uint16,bytes,uint64,bytes)": FunctionFragment;
     "owner()": FunctionFragment;
-    "placeBid((uint256,bytes32,address,uint256))": FunctionFragment;
+    "placeBid((address,uint256,bytes32,address,uint256))": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "swapOrderBuyToken(bytes32)": FunctionFragment;
     "swapOrderID(bytes32)": FunctionFragment;
@@ -383,7 +386,7 @@ export interface AtomicSwapV2 extends BaseContract {
     acceptBid(
       _orderID: PromiseOrValue<BytesLike>,
       _bidder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     bids(
@@ -501,7 +504,7 @@ export interface AtomicSwapV2 extends BaseContract {
   acceptBid(
     _orderID: PromiseOrValue<BytesLike>,
     _bidder: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   bids(
@@ -791,7 +794,7 @@ export interface AtomicSwapV2 extends BaseContract {
     acceptBid(
       _orderID: PromiseOrValue<BytesLike>,
       _bidder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     bids(
@@ -878,7 +881,7 @@ export interface AtomicSwapV2 extends BaseContract {
     acceptBid(
       _orderID: PromiseOrValue<BytesLike>,
       _bidder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     bids(

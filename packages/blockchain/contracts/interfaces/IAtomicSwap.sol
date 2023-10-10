@@ -94,10 +94,16 @@ interface IAtomicSwap {
     }
 
     struct PlaceBidMsg {
+        address bidder;
         uint256 bidAmount;
         bytes32 orderID;
         address bidderReceiver;
         uint256 expireTimestamp;
+    }
+
+    struct AcceptBidMsg {
+        bytes32 orderID;
+        address bidder;
     }
 
     struct CancelSwapMsg {
@@ -142,4 +148,11 @@ interface IAtomicSwap {
     error InvalidBidAmount();
 
     error TokenTransferFailed();
+
+    error NoPermissionToAccept();
+
+    error InvalidBidder(address real, address expected);
+
+    error NoPlaceStatusOfBid(BidStatus status);
+    error WrongBidder();
 }

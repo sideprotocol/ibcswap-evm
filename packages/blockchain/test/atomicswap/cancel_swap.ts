@@ -4,8 +4,16 @@ import { expect } from "chai";
 import { randomBytes } from "crypto";
 describe("AtomicSwap: CancelSwap", () => {
   it("cancel swap (in-chain)", async () => {
-    const { orderID, chainID, chainA, chainB, taker, bridgeB, bridgeA, usdc } =
-      await createDefaultAtomicOrder(PoolType.IN_CHAIN);
+    const {
+      orderID,
+      chainID,
+      atomicSwapA,
+      atomicSwapB,
+      taker,
+      bridgeB,
+      bridgeA,
+      usdc,
+    } = await createDefaultAtomicOrder(PoolType.IN_CHAIN);
     const cancelSwapMsg = {
       orderID: orderID,
     };
@@ -23,12 +31,12 @@ describe("AtomicSwap: CancelSwap", () => {
       payloadBytes
     );
 
-    const operators = await chainA.swapOrderOperators(orderID);
-    const sellToken = await chainA.swapOrderSellToken(orderID);
+    const operators = await atomicSwapA.swapOrderOperators(orderID);
+    const sellToken = await atomicSwapA.swapOrderSellToken(orderID);
     const amountBeforeCancel = await usdc.balanceOf(operators.maker);
 
     await expect(
-      chainA.cancelSwap(cancelSwapMsg, {
+      atomicSwapA.cancelSwap(cancelSwapMsg, {
         value: estimateFee.nativeFee.mul(20).div(10),
       })
     ).not.to.reverted;
@@ -38,12 +46,20 @@ describe("AtomicSwap: CancelSwap", () => {
       sellToken.amount
     );
 
-    const swapOrderIDAtChainA = await chainA.swapOrderID(orderID);
-    expect(swapOrderIDAtChainA.id).to.equal(ethers.constants.HashZero);
+    const swapOrderIDAtatomicSwapA = await atomicSwapA.swapOrderID(orderID);
+    expect(swapOrderIDAtatomicSwapA.id).to.equal(ethers.constants.HashZero);
   });
   it("cancel swap (inter-chain)", async () => {
-    const { orderID, chainID, chainA, chainB, taker, bridgeB, bridgeA, usdc } =
-      await createDefaultAtomicOrder(PoolType.INTER_CHAIN);
+    const {
+      orderID,
+      chainID,
+      atomicSwapA,
+      atomicSwapB,
+      taker,
+      bridgeB,
+      bridgeA,
+      usdc,
+    } = await createDefaultAtomicOrder(PoolType.INTER_CHAIN);
     const cancelSwapMsg = {
       orderID: orderID,
     };
@@ -61,12 +77,12 @@ describe("AtomicSwap: CancelSwap", () => {
       payloadBytes
     );
 
-    const operators = await chainA.swapOrderOperators(orderID);
-    const sellToken = await chainA.swapOrderSellToken(orderID);
+    const operators = await atomicSwapA.swapOrderOperators(orderID);
+    const sellToken = await atomicSwapA.swapOrderSellToken(orderID);
     const amountBeforeCancel = await usdc.balanceOf(operators.maker);
 
     await expect(
-      chainA.cancelSwap(cancelSwapMsg, {
+      atomicSwapA.cancelSwap(cancelSwapMsg, {
         value: estimateFee.nativeFee.mul(20).div(10),
       })
     ).not.to.reverted;
@@ -76,14 +92,14 @@ describe("AtomicSwap: CancelSwap", () => {
       sellToken.amount
     );
 
-    const swapOrderIDAtChainA = await chainA.swapOrderID(orderID);
-    expect(swapOrderIDAtChainA.id).to.equal(ethers.constants.HashZero);
-    const swapOrderIDAtChainB = await chainB.swapOrderID(orderID);
-    expect(swapOrderIDAtChainB.id).to.equal(ethers.constants.HashZero);
+    const swapOrderIDAtatomicSwapA = await atomicSwapA.swapOrderID(orderID);
+    expect(swapOrderIDAtatomicSwapA.id).to.equal(ethers.constants.HashZero);
+    const swapOrderIDAtatomicSwapB = await atomicSwapB.swapOrderID(orderID);
+    expect(swapOrderIDAtatomicSwapB.id).to.equal(ethers.constants.HashZero);
   });
 
   it("should revert when sender is not the maker", async () => {
-    const { orderID, chainA, taker } = await createDefaultAtomicOrder(
+    const { orderID, atomicSwapA, taker } = await createDefaultAtomicOrder(
       PoolType.IN_CHAIN
     );
     const cancelSwapMsg = {
@@ -91,27 +107,27 @@ describe("AtomicSwap: CancelSwap", () => {
     };
 
     await expect(
-      chainA.connect(taker).cancelSwap(cancelSwapMsg)
-    ).to.be.revertedWithCustomError(chainA, "NoPermissionToCancel");
+      atomicSwapA.connect(taker).cancelSwap(cancelSwapMsg)
+    ).to.be.revertedWithCustomError(atomicSwapA, "NoPermissionToCancel");
   });
 
   it("should revert when swap doesn't exist", async () => {
-    const { chainA, taker } = await createDefaultAtomicOrder(PoolType.IN_CHAIN);
+    const { atomicSwapA, taker } = await createDefaultAtomicOrder(
+      PoolType.IN_CHAIN
+    );
     const cancelSwapMsg = {
       orderID: randomBytes(32),
     };
     await expect(
-      chainA.connect(taker).cancelSwap(cancelSwapMsg)
-    ).to.be.revertedWithCustomError(chainA, "NonExistPool");
+      atomicSwapA.connect(taker).cancelSwap(cancelSwapMsg)
+    ).to.be.revertedWithCustomError(atomicSwapA, "NonExistPool");
   });
 
   it("should unlock ether when sell token is zero address", async () => {
-    const { orderID, chainA, maker, payload } = await createDefaultAtomicOrder(
-      PoolType.IN_CHAIN,
-      true
-    );
+    const { orderID, atomicSwapA, maker, payload } =
+      await createDefaultAtomicOrder(PoolType.IN_CHAIN, true);
     const balanceBeforeCancel = await ethers.provider.getBalance(maker.address);
-    const tx = await chainA.cancelSwap({ orderID: orderID });
+    const tx = await atomicSwapA.cancelSwap({ orderID: orderID });
     const receipt = await tx.wait();
     const gasUsed = receipt.gasUsed;
     const txCost = gasUsed.mul(tx.gasPrice!);

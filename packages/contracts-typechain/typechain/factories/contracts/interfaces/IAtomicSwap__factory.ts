@@ -26,8 +26,29 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "real",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "expected",
+        type: "address",
+      },
+    ],
+    name: "InvalidBidder",
+    type: "error",
+  },
+  {
     inputs: [],
     name: "InvalidTokenPair",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NoPermissionToAccept",
     type: "error",
   },
   {
@@ -38,6 +59,17 @@ const _abi = [
   {
     inputs: [],
     name: "NoPermissionToTake",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "enum IAtomicSwap.BidStatus",
+        name: "status",
+        type: "uint8",
+      },
+    ],
+    name: "NoPlaceStatusOfBid",
     type: "error",
   },
   {
@@ -58,6 +90,11 @@ const _abi = [
   {
     inputs: [],
     name: "TokenTransferFailed",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "WrongBidder",
     type: "error",
   },
   {
