@@ -7,5 +7,5 @@ import type * as oracles from "./oracles";
 export type { oracles };
 export type { IAtomicSwap } from "./IAtomicSwap";
 export type { IInterchainSwap } from "./IInterchainSwap";
-export type { IOwnablePausable } from "./IOwnablePausable";
+export type { ISideLzAppUpgradable } from "./ISideLzAppUpgradable";
 export type { ISideOracle } from "./ISideOracle";

@@ -2,76 +2,157 @@
 pragma solidity ^0.8.9;
 
 interface IAtomicSwap {
-    // Data types
+    function onReceivePacket(
+        uint16 _srcChainId,
+        bytes memory _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    ) external;
+
+    enum MsgType {
+        MAKESWAP,
+        TAKESWAP,
+        CANCELSWAP,
+        PLACEBID,
+        ACCEPTBID
+    }
     enum Side {
-        NATIVE,
-        REMOTE
+        REMOTE,
+        NATIVE
     }
     enum Status {
-        INITIAL,
         SYNC,
+        INITIAL,
         CANCEL,
         FAILED,
         COMPLETE
     }
-    struct AtomicSwapOrder {
-        bytes32 id;
-        Side side;
-        Status status;
-        address bridge;
-        Coin sellToken;
-        Coin buyToken;
-        address makerSender;
-        address makerReceiver;
-        address desiredTaker;
-        address taker;
-        address takerReceivingAddress;
-        uint createAt;
-        uint cancelAt;
-        uint completeAt;
-        uint16 srcChainID;
-        uint16 dstChainID;
+
+    enum PoolType {
+        INCHAIN,
+        INTERCHAIN
     }
 
     struct Coin {
         address token;
-        address amount;
+        uint256 amount;
     }
 
-    // Messages
+    struct AtomicSwapID {
+        bytes32 id;
+        uint16 srcChainID;
+        uint16 dstChainID;
+        PoolType poolType;
+    }
+
+    struct AtomicSwapOperators {
+        address maker;
+        address taker;
+        address makerReceiver;
+        address takerReceiver;
+    }
+    struct AtomicSwapStatus {
+        Side side;
+        Status status;
+        uint256 createdAt;
+        uint256 canceledAt;
+        uint256 completedAt;
+    }
+
+    enum BidStatus {
+        Initial,
+        Failed,
+        Cancelled,
+        Executed,
+        Placed
+    }
+
+    struct Bid {
+        uint256 amount;
+        bytes32 order;
+        BidStatus status;
+        address bidder;
+        address bidderReceiver;
+        uint256 receiveTimestamp;
+        uint256 expireTimestamp;
+    }
+
     struct MakeSwapMsg {
         Coin sellToken;
         Coin buyToken;
         address makerSender;
         address makerReceiver;
         address desiredTaker;
-        uint createdAt;
-        uint expireAt;
+        uint256 expireAt;
         uint16 dstChainID;
+        PoolType poolType;
     }
 
     struct TakeSwapMsg {
         bytes32 orderID;
-        Coin sellToken;
-        address taker;
-        address takerReceivingAddress;
-        address createdAt;
+        address takerReceiver;
+    }
+
+    struct PlaceBidMsg {
+        address bidder;
+        uint256 bidAmount;
+        bytes32 orderID;
+        address bidderReceiver;
+        uint256 expireTimestamp;
+    }
+
+    struct AcceptBidMsg {
+        bytes32 orderID;
+        address bidder;
     }
 
     struct CancelSwapMsg {
         bytes32 orderID;
-        address maker;
-        uint createdAt;
     }
 
-    // events
+    // Events
     event PaymentReceived(
         address indexed payer,
         uint256 amount,
         uint256 daoShare,
         uint256 burned
     );
+    event AtomicSwapOrderCreated(bytes32 indexed id);
+    event AtomicSwapOrderTook(
+        address indexed maker,
+        address indexed taker,
+        bytes32 indexed id
+    );
+
+    event AtomicSwapOrderCanceled(bytes32 indexed id);
 
     // Define errors
-    error AlreaydExistPool();
+    error AlreadyExistPool();
+
+    error NonExistPool();
+
+    error NoPermissionToTake();
+
+    error AlreadyCompleted();
+
+    error NoPermissionToCancel();
+
+    error NotAllowedAmount();
+
+    error InvalidTokenPair();
+
+    error ZeroTokenAddress();
+
+    error NotOwnerOfToken();
+
+    error InvalidBidAmount();
+
+    error TokenTransferFailed();
+
+    error NoPermissionToAccept();
+
+    error InvalidBidder(address real, address expected);
+
+    error NoPlaceStatusOfBid(BidStatus status);
+    error WrongBidder();
 }

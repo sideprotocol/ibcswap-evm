@@ -17,14 +17,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AggregatorV3Interface__factory>;
     getContractFactory(
-      name: "AccessControlUpgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.AccessControlUpgradeable__factory>;
-    getContractFactory(
-      name: "IAccessControlUpgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IAccessControlUpgradeable__factory>;
-    getContractFactory(
       name: "OwnableUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.OwnableUpgradeable__factory>;
@@ -36,10 +28,6 @@ declare module "hardhat/types/runtime" {
       name: "IERC1967Upgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC1967Upgradeable__factory>;
-    getContractFactory(
-      name: "IERC5267Upgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC5267Upgradeable__factory>;
     getContractFactory(
       name: "IBeaconUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -57,25 +45,21 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.UUPSUpgradeable__factory>;
     getContractFactory(
-      name: "PausableUpgradeable",
+      name: "ReentrancyGuardUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.PausableUpgradeable__factory>;
+    ): Promise<Contracts.ReentrancyGuardUpgradeable__factory>;
     getContractFactory(
       name: "ContextUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ContextUpgradeable__factory>;
     getContractFactory(
-      name: "EIP712Upgradeable",
+      name: "ERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.EIP712Upgradeable__factory>;
+    ): Promise<Contracts.ERC20__factory>;
     getContractFactory(
-      name: "ERC165Upgradeable",
+      name: "IERC20Metadata",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC165Upgradeable__factory>;
-    getContractFactory(
-      name: "IERC165Upgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC165Upgradeable__factory>;
+    ): Promise<Contracts.IERC20Metadata__factory>;
     getContractFactory(
       name: "IERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -97,21 +81,33 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IInterchainSwap__factory>;
     getContractFactory(
-      name: "IOwnablePausable",
+      name: "ISideLzAppUpgradable",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IOwnablePausable__factory>;
+    ): Promise<Contracts.ISideLzAppUpgradable__factory>;
     getContractFactory(
       name: "ISideOracle",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ISideOracle__factory>;
     getContractFactory(
+      name: "ILayerZeroEndpoint",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILayerZeroEndpoint__factory>;
+    getContractFactory(
       name: "ILayerZeroEndpointUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ILayerZeroEndpointUpgradeable__factory>;
     getContractFactory(
+      name: "ILayerZeroReceiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILayerZeroReceiver__factory>;
+    getContractFactory(
       name: "ILayerZeroReceiverUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ILayerZeroReceiverUpgradeable__factory>;
+    getContractFactory(
+      name: "ILayerZeroUserApplicationConfig",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILayerZeroUserApplicationConfig__factory>;
     getContractFactory(
       name: "ILayerZeroUserApplicationConfigUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -157,9 +153,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NonblockingLzAppUpgradeable__factory>;
     getContractFactory(
-      name: "OwnablePausableUpgradeable",
+      name: "SideLzAppUpgradable",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.OwnablePausableUpgradeable__factory>;
+    ): Promise<Contracts.SideLzAppUpgradable__factory>;
+    getContractFactory(
+      name: "LZEndpointMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LZEndpointMock__factory>;
+    getContractFactory(
+      name: "MockToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockToken__factory>;
     getContractFactory(
       name: "AtomicSwapV2",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -170,16 +174,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.AggregatorV3Interface>;
-    getContractAt(
-      name: "AccessControlUpgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.AccessControlUpgradeable>;
-    getContractAt(
-      name: "IAccessControlUpgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IAccessControlUpgradeable>;
     getContractAt(
       name: "OwnableUpgradeable",
       address: string,
@@ -195,11 +189,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC1967Upgradeable>;
-    getContractAt(
-      name: "IERC5267Upgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC5267Upgradeable>;
     getContractAt(
       name: "IBeaconUpgradeable",
       address: string,
@@ -221,30 +210,25 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.UUPSUpgradeable>;
     getContractAt(
-      name: "PausableUpgradeable",
+      name: "ReentrancyGuardUpgradeable",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.PausableUpgradeable>;
+    ): Promise<Contracts.ReentrancyGuardUpgradeable>;
     getContractAt(
       name: "ContextUpgradeable",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ContextUpgradeable>;
     getContractAt(
-      name: "EIP712Upgradeable",
+      name: "ERC20",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.EIP712Upgradeable>;
+    ): Promise<Contracts.ERC20>;
     getContractAt(
-      name: "ERC165Upgradeable",
+      name: "IERC20Metadata",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.ERC165Upgradeable>;
-    getContractAt(
-      name: "IERC165Upgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC165Upgradeable>;
+    ): Promise<Contracts.IERC20Metadata>;
     getContractAt(
       name: "IERC20",
       address: string,
@@ -271,25 +255,40 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IInterchainSwap>;
     getContractAt(
-      name: "IOwnablePausable",
+      name: "ISideLzAppUpgradable",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.IOwnablePausable>;
+    ): Promise<Contracts.ISideLzAppUpgradable>;
     getContractAt(
       name: "ISideOracle",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ISideOracle>;
     getContractAt(
+      name: "ILayerZeroEndpoint",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILayerZeroEndpoint>;
+    getContractAt(
       name: "ILayerZeroEndpointUpgradeable",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ILayerZeroEndpointUpgradeable>;
     getContractAt(
+      name: "ILayerZeroReceiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILayerZeroReceiver>;
+    getContractAt(
       name: "ILayerZeroReceiverUpgradeable",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ILayerZeroReceiverUpgradeable>;
+    getContractAt(
+      name: "ILayerZeroUserApplicationConfig",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILayerZeroUserApplicationConfig>;
     getContractAt(
       name: "ILayerZeroUserApplicationConfigUpgradeable",
       address: string,
@@ -346,10 +345,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.NonblockingLzAppUpgradeable>;
     getContractAt(
-      name: "OwnablePausableUpgradeable",
+      name: "SideLzAppUpgradable",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.OwnablePausableUpgradeable>;
+    ): Promise<Contracts.SideLzAppUpgradable>;
+    getContractAt(
+      name: "LZEndpointMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LZEndpointMock>;
+    getContractAt(
+      name: "MockToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockToken>;
     getContractAt(
       name: "AtomicSwapV2",
       address: string,

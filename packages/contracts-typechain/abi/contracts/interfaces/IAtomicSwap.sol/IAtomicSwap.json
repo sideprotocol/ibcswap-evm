@@ -5,8 +5,146 @@
   "abi": [
     {
       "inputs": [],
-      "name": "AlreaydExistPool",
+      "name": "AlreadyCompleted",
       "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyExistPool",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidBidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "real",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "expected",
+          "type": "address"
+        }
+      ],
+      "name": "InvalidBidder",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidTokenPair",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NoPermissionToAccept",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NoPermissionToCancel",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NoPermissionToTake",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum IAtomicSwap.BidStatus",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "name": "NoPlaceStatusOfBid",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NonExistPool",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAllowedAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotOwnerOfToken",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TokenTransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WrongBidder",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroTokenAddress",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "id",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AtomicSwapOrderCanceled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "id",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AtomicSwapOrderCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "maker",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "taker",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "id",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AtomicSwapOrderTook",
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -38,6 +176,34 @@
       ],
       "name": "PaymentReceived",
       "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_nonce",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_payload",
+          "type": "bytes"
+        }
+      ],
+      "name": "onReceivePacket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ],
   "bytecode": "0x",
